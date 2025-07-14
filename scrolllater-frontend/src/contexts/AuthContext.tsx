@@ -27,88 +27,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  const ensureUserProfile = useCallback(async () => {
-    if (!user?.id) {
-      console.log('ensureUserProfile: No user ID, skipping');
-      return;
-    }
+  const ensureUserProfile = useCallback(async (user: User) => {
+    if (!user) return;
 
     try {
-      console.log('Ensuring user profile for:', user?.email);
+      console.log('Ensuring user profile for:', user.email);
       
-      // Check if user profile exists
-      const { data: existingProfile, error: fetchError } = await supabase
+      // Use upsert to create the profile if it doesn't exist
+      const { error } = await supabase
         .from('user_profiles')
-        .select('id')
-        .eq('id', user.id)
-        .single();
+        .upsert({
+          id: user.id,
+          display_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+          apple_shortcut_token: generateShortcutToken()
+        }, { onConflict: 'id' });
 
-      if (fetchError && fetchError.code === 'PGRST116') {
-        // Profile doesn't exist, create it
-        console.log('Creating new user profile for:', user.id);
-        const { error: insertError } = await supabase
-          .from('user_profiles')
-          .insert({
-            id: user.id,
-            display_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
-            apple_shortcut_token: generateShortcutToken()
-          });
-
-        if (insertError) {
-          console.error('Error creating user profile:', insertError);
-        } else {
-          console.log('User profile created successfully');
-        }
-      } else if (fetchError) {
-        console.error('Error checking user profile:', fetchError);
+      if (error) {
+        console.error('Error ensuring user profile:', error);
       } else {
-        console.log('User profile already exists');
+        console.log('User profile ensured successfully');
       }
     } catch (error) {
-      console.error('Error ensuring user profile:', error);
+      console.error('Error in ensureUserProfile:', error);
     }
-  }, [user, supabase]);
-
-  useEffect(() => {
-    if (user && mounted) {
-      ensureUserProfile();
-    }
-  }, [user, ensureUserProfile, mounted]);
+  }, [supabase]);
 
   useEffect(() => {
     if (!mounted) return;
 
     console.log('AuthProvider: Setting up auth state listener...');
-    
+
+    // Immediately check for an existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('AuthProvider: Initial session fetch:', session?.user?.email);
+      setUser(session?.user ?? null);
+      setSession(session);
+      setLoading(false);
+
+      if (session?.user) {
+        ensureUserProfile(session.user);
+      }
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('AuthProvider: Auth state changed:', event, session?.user?.email);
         setUser(session?.user ?? null);
         setSession(session);
         setLoading(false);
+
+        if (event === 'SIGNED_IN' && session?.user) {
+          ensureUserProfile(session.user);
+        }
       }
     );
 
-    // Also check current session immediately
-    const checkCurrentSession = async () => {
-      try {
-        console.log('AuthProvider: Checking current session...');
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log('AuthProvider: Current session:', currentSession?.user?.email);
-        
-        setUser(currentSession?.user ?? null);
-        setSession(currentSession);
-        setLoading(false);
-      } catch (error) {
-        console.error('AuthProvider: Error checking current session:', error);
-        setLoading(false);
-      }
-    };
-    
-    checkCurrentSession();
-
     return () => subscription.unsubscribe();
-  }, [supabase.auth, mounted]);
+  }, [supabase, mounted, ensureUserProfile]);
 
   const generateShortcutToken = () => {
     return 'sl_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);

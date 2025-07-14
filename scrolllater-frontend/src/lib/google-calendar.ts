@@ -15,28 +15,51 @@ class GoogleCalendar {
    * Initiates the Google OAuth flow for calendar access.
    */
   async signIn() {
-    const { error } = await this.supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        scopes: 'https://www.googleapis.com/auth/calendar',
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
+    // Generate a random state parameter for security
+    const state = Math.random().toString(36).substring(2, 15);
+    
+    // Store state in sessionStorage for verification
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('google_oauth_state', state);
+    }
+
+    // Construct the Google OAuth URL
+    const params = new URLSearchParams({
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+      redirect_uri: `${window.location.origin}/api/auth/google-callback`,
+      response_type: 'code',
+      scope: 'https://www.googleapis.com/auth/calendar',
+      access_type: 'offline',
+      prompt: 'consent',
+      state: state,
     });
 
-    if (error) {
-      console.error('Error signing in with Google:', error);
-      throw error;
-    }
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    
+    // Redirect to Google OAuth
+    window.location.href = authUrl;
   }
 
   /**
    * Signs the user out and revokes Google Calendar access.
    */
   async signOut() {
-    // We can't directly revoke the token from the client-side.
-    // The user must do this from their Google account settings.
-    // For our app, we just sign them out.
-    await this.supabase.auth.signOut();
+    try {
+      // Update user profile to remove Google Calendar connection
+      const { data: { session } } = await this.supabase.auth.getSession();
+      if (session?.user) {
+        await this.supabase
+          .from('user_profiles')
+          .update({
+            google_calendar_connected: false,
+            google_refresh_token: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', session.user.id);
+      }
+    } catch (error) {
+      console.error('Error disconnecting Google Calendar:', error);
+    }
   }
 
   /**

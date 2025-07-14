@@ -20,6 +20,63 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  // --- BEGIN: Google Calendar OAuth profile update endpoint ---
+  if (req.method === 'POST' && req.url?.endsWith('/connect')) {
+    try {
+      // Check for Authorization header
+      const authHeader = req.headers.get('Authorization');
+      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      if (!authHeader || authHeader.replace('Bearer ', '') !== serviceRoleKey) {
+        console.error('[calendar-integration/connect] Missing or invalid Authorization header');
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized: Missing or invalid Authorization header' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      const { userId, refreshToken, defaultCalendarId } = await req.json();
+      if (!userId || !refreshToken) {
+        console.error('[calendar-integration/connect] Missing userId or refreshToken');
+        return new Response(
+          JSON.stringify({ error: 'Missing userId or refreshToken' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      // Update user_profiles
+      const { error: updateError } = await supabaseClient
+        .from('user_profiles')
+        .update({
+          google_calendar_connected: true,
+          google_refresh_token: refreshToken,
+          default_calendar_id: defaultCalendarId || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+      if (updateError) {
+        console.error('[calendar-integration/connect] Update error:', updateError);
+        return new Response(
+          JSON.stringify({ error: updateError.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      console.log('[calendar-integration/connect] Successfully updated user profile for', userId);
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (error) {
+      console.error('[calendar-integration/connect] Exception:', error);
+      return new Response(
+        JSON.stringify({ error: error.message || 'Internal server error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+  }
+  // --- END: Google Calendar OAuth profile update endpoint ---
+
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -66,8 +123,25 @@ serve(async (req) => {
     })
 
     const tokenData = await tokenResponse.json()
-    
+
     if (!tokenResponse.ok) {
+      // If the refresh token is invalid, disconnect the user's calendar
+      if (tokenData.error === 'invalid_grant' || tokenData.error === 'invalid_request') {
+        await supabaseClient
+          .from('user_profiles')
+          .update({
+            google_calendar_connected: false,
+            google_refresh_token: null,
+            default_calendar_id: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id)
+
+        return new Response(
+          JSON.stringify({ error: 'invalid_token', message: 'Google Calendar connection lost. Please reconnect.' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
       throw new Error(`Token refresh failed: ${tokenData.error}`)
     }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { format, formatDistanceToNow } from 'date-fns'
+import { format, formatDistanceToNow, addDays, formatISO } from 'date-fns'
 import { 
   CalendarIcon, 
   LinkIcon, 
@@ -32,6 +32,12 @@ const STATUS_COLORS = {
 
 export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [showScheduleModal, setShowScheduleModal] = useState(false)
+  const [scheduleDate, setScheduleDate] = useState(() => formatISO(addDays(new Date(), 1), { representation: 'date' }))
+  const [scheduleTime, setScheduleTime] = useState('14:00')
+  const [scheduleDuration, setScheduleDuration] = useState(60)
+  const [scheduleError, setScheduleError] = useState<string | null>(null)
+  const [scheduleSuccess, setScheduleSuccess] = useState<string | null>(null)
 
   const handleStatusChange = async (newStatus: Entry['status']) => {
     setIsLoading(true)
@@ -53,6 +59,50 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
       })
     } catch (error) {
       console.error('Error scheduling entry:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleManualSchedule = async () => {
+    setIsLoading(true)
+    setScheduleError(null)
+    setScheduleSuccess(null)
+    try {
+      // Combine date and time
+      const scheduledDateTime = new Date(`${scheduleDate}T${scheduleTime}:00`)
+      // Call backend API to schedule event
+      const res = await fetch('/api/calendar/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entryId: item.id,
+          title: item.title || item.content.substring(0, 60),
+          description: item.ai_summary || item.content,
+          startTime: scheduledDateTime.toISOString(),
+          duration: scheduleDuration
+        })
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        if (data.error === 'invalid_token') {
+          setScheduleError('Google Calendar connection lost. Please reconnect in settings.')
+        } else {
+          setScheduleError(data.error || 'Failed to schedule event')
+        }
+        return
+      }
+      // Update entry with scheduled info
+      await onUpdate(item.id, {
+        status: 'scheduled',
+        scheduled_for: scheduledDateTime.toISOString(),
+        calendar_event_id: data.eventId,
+        calendar_event_url: data.eventUrl
+      })
+      setScheduleSuccess('Event scheduled!')
+      setShowScheduleModal(false)
+    } catch (error: any) {
+      setScheduleError(error.message || 'Internal error')
     } finally {
       setIsLoading(false)
     }
@@ -202,6 +252,55 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
                     </button>
                 ))}
             </div>
+        </div>
+      )}
+      {/* Manual Schedule Button */}
+      {item.status === 'inbox' && (
+        <div className="mt-4">
+          <button
+            onClick={() => setShowScheduleModal(true)}
+            className="w-full py-2 px-4 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 transition disabled:opacity-50"
+            disabled={isLoading}
+          >
+            Schedule Manually
+          </button>
+        </div>
+      )}
+      {/* Scheduling Modal */}
+      {showScheduleModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-auto p-6 z-10">
+            <h3 className="text-lg font-semibold mb-4">Schedule Entry</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Date</label>
+                <input type="date" value={scheduleDate} onChange={e => setScheduleDate(e.target.value)} className="w-full border rounded px-2 py-1" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Time</label>
+                <input type="time" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)} className="w-full border rounded px-2 py-1" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Duration (minutes)</label>
+                <select value={scheduleDuration} onChange={e => setScheduleDuration(Number(e.target.value))} className="w-full border rounded px-2 py-1">
+                  <option value={15}>15</option>
+                  <option value={30}>30</option>
+                  <option value={45}>45</option>
+                  <option value={60}>60</option>
+                  <option value={90}>90</option>
+                  <option value={120}>120</option>
+                </select>
+              </div>
+              {scheduleError && <div className="text-red-600 text-sm">{scheduleError}</div>}
+              {scheduleSuccess && <div className="text-green-600 text-sm">{scheduleSuccess}</div>}
+            </div>
+            <div className="flex justify-end mt-6 space-x-2">
+              <button onClick={() => setShowScheduleModal(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-700">Cancel</button>
+              <button onClick={handleManualSchedule} disabled={isLoading} className="px-4 py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50">
+                {isLoading ? 'Scheduling...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

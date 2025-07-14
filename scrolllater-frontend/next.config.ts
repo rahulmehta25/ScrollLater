@@ -7,9 +7,7 @@ const withPWA = require('next-pwa')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
+  // Removed experimental.appDir as it is no longer needed in Next.js 13+
   images: {
     domains: ['images.unsplash.com', 'via.placeholder.com'],
   },
