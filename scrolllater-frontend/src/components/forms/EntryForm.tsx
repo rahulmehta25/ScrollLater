@@ -48,7 +48,6 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
   })
 
   const contentValue = watch('content')
-  const urlValue = watch('url')
 
   const detectUrl = (text: string) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g
@@ -61,7 +60,7 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
 
   const onSubmit = async (data: EntryFormData) => {
     if (!user) {
-      setError('Please sign in to save entries')
+      setError('Please sign in to create an entry')
       return
     }
 
@@ -75,37 +74,68 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
         : []
 
       // Create entry
-      const { error: insertError } = await supabase
+      const { data: newEntry, error: insertError } = await supabase
         .from('entries')
         .insert({
           user_id: user.id,
-          title: data.content.substring(0, 100), // Use first 100 chars as title
           content: data.content,
           original_input: data.content,
           url: data.url || null,
           user_category: selectedCategory || null,
           user_tags: tags,
-          status: 'inbox',
           source: 'web'
         })
+        .select()
+        .single()
 
-      if (insertError) {
-        console.error('Supabase error details:', insertError)
-        throw new Error(insertError.message || 'Failed to save entry')
+      if (insertError) throw insertError
+
+      // Call secure API route for AI analysis
+      const response = await fetch('/api/ai/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: data.content,
+          url: data.url
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze content with AI')
       }
+
+      const { analysis } = await response.json()
+
+      // Update entry with AI analysis
+      const { error: updateError } = await supabase
+        .from('entries')
+        .update({
+          title: analysis.title,
+          ai_summary: analysis.summary,
+          ai_category: analysis.category,
+          ai_tags: analysis.tags,
+          ai_confidence_score: analysis.confidence,
+          metadata: {
+            sentiment: analysis.sentiment,
+            urgency: analysis.urgency,
+            estimated_read_time: analysis.estimatedReadTime,
+            suggested_scheduling: analysis.suggestedScheduling
+          }
+        })
+        .eq('id', newEntry.id)
+
+      if (updateError) throw updateError
 
       // Reset form
       reset()
       setSelectedCategory('')
-      setError('')
       onSuccess?.()
 
-      // Show success message
-      console.log('Entry created successfully!')
-
-    } catch (error: any) {
-      console.error('Error creating entry:', error)
-      setError(error.message || 'Failed to save entry. Please try again.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create entry')
+      console.error('Entry creation error:', err)
     } finally {
       setIsLoading(false)
     }
@@ -114,13 +144,6 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <p className="text-sm text-red-700">{error}</p>
-          </div>
-        )}
-
         {/* Content Input */}
         <div>
           <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
@@ -129,7 +152,7 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
           <textarea
             {...register('content')}
             rows={4}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-black"
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
             placeholder="Paste a link, write a note, or describe an idea..."
             onChange={(e) => {
               register('content').onChange(e)
@@ -150,7 +173,7 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
           <input
             {...register('url')}
             type="url"
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-black"
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
             placeholder="https://example.com"
           />
           {errors.url && (
@@ -193,16 +216,23 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
           <input
             {...register('tags')}
             type="text"
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-black"
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
             placeholder="productivity, tools, inspiration"
           />
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="rounded-md bg-red-50 p-4">
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
+        )}
 
         {/* Submit Button */}
         <button
           type="submit"
           disabled={isLoading || !contentValue}
-          className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>

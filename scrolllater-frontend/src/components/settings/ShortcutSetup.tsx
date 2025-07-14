@@ -49,9 +49,9 @@ export function ShortcutSetup() {
               <ol className="list-decimal list-inside mt-2 text-sm text-gray-600">
                 <li>Open the Shortcuts app on your iPhone.</li>
                 <li>Create a new shortcut.</li>
-                <li>Add a "Get Clipboard" action.</li>
-                <li>Add a "URL" action and paste in the Webhook URL.</li>
-                <li>Add a "Get Contents of URL" action.</li>
+                <li>Add a &ldquo;Get Clipboard&rdquo; action.</li>
+                <li>Add a &ldquo;URL&rdquo; action and paste in the Webhook URL.</li>
+                <li>Add a &ldquo;Get Contents of URL&rdquo; action.</li>
                 <li>Set the method to POST.</li>
                 <li>In the request body, add a JSON object with the following keys:</li>
                 <ul className="list-disc list-inside ml-4">
@@ -60,6 +60,15 @@ export function ShortcutSetup() {
                 </ul>
                 <li>Save the shortcut and add it to your home screen for easy access.</li>
               </ol>
+            </div>
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-medium text-blue-900 mb-2">Shortcut Actions</h3>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• &ldquo;Add to ScrollLater&rdquo; - Capture current page</li>
+                <li>• &ldquo;Quick Note&rdquo; - Add text note</li>
+                <li>• &ldquo;Read Later&rdquo; - Mark for reading</li>
+                <li>• &ldquo;Build Later&rdquo; - Mark for building</li>
+              </ul>
             </div>
           </div>
         </div>
