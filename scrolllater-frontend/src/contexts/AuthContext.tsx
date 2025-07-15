@@ -112,8 +112,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (hasOAuthParams) {
         console.log('AuthProvider: OAuth callback detected, rechecking session...');
-        // Small delay to ensure OAuth callback has completed
-        setTimeout(checkSession, 1000);
+        // Multiple attempts to ensure session is restored
+        const attemptSessionRestore = async (attempts = 0) => {
+          if (attempts >= 5) {
+            console.log('AuthProvider: Max attempts reached, forcing page reload...');
+            window.location.reload();
+            return;
+          }
+          
+          await checkSession();
+          
+          // If still no user after 1 second, try again
+          setTimeout(() => {
+            if (!user) {
+              console.log(`AuthProvider: Session restore attempt ${attempts + 1}, retrying...`);
+              attemptSessionRestore(attempts + 1);
+            }
+          }, 1000);
+        };
+        
+        attemptSessionRestore();
       }
     };
 
