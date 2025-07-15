@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../../contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { createSupabaseClient } from '@/lib/supabase'
 import { 
   ClipboardDocumentIcon, 
@@ -16,14 +16,22 @@ export default function SettingsPage() {
   const [shortcutToken, setShortcutToken] = useState<string>('')
   const [copied, setCopied] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [userProfile, setUserProfile] = useState<any>(null)
+  const [userProfile, setUserProfile] = useState<{
+    id: string;
+    display_name?: string;
+    apple_shortcut_token?: string;
+    google_calendar_connected?: boolean;
+    default_block_duration?: number;
+    timezone?: string;
+    auto_schedule_enabled?: boolean;
+  } | null>(null)
   const supabase = createSupabaseClient()
 
   useEffect(() => {
     if (user) {
       fetchUserProfile()
     }
-  }, [user])
+  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchUserProfile = async () => {
     try {

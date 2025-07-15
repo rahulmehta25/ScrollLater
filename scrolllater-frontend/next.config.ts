@@ -5,9 +5,10 @@ const withPWA = require('next-pwa')({
   disable: process.env.NODE_ENV === 'development'
 })
 
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Removed experimental.appDir as it is no longer needed in Next.js 13+
   images: {
     domains: ['images.unsplash.com', 'via.placeholder.com'],
   },
@@ -31,6 +32,10 @@ const nextConfig = {
         ],
       },
     ]
+  },
+  webpack: (config: any) => {
+    config.resolve.alias['@'] = path.resolve(__dirname, 'src');
+    return config;
   },
 }
 
