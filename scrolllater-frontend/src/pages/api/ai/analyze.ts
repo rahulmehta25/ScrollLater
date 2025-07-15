@@ -1,5 +1,5 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { createServerClient } from '@supabase/ssr'
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { createClient } from '@supabase/supabase-js'
 import { AIProcessor } from '@/lib/ai-processor'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -8,70 +8,87 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Verify authentication
-    const supabase = createServerClient(
+    // Initialize Supabase client
+    const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            const cookies: { name: string; value: string }[] = []
-            const cookieHeader = req.headers.cookie
-            if (cookieHeader) {
-              cookieHeader.split(';').forEach(cookie => {
-                const [name, value] = cookie.trim().split('=')
-                if (name && value) {
-                  cookies.push({ name, value })
-                }
-              })
-            }
-            return cookies
-          },
-          setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              const cookieOptions: string[] = []
-              if (options?.maxAge) cookieOptions.push(`Max-Age=${options.maxAge}`)
-              if (options?.domain) cookieOptions.push(`Domain=${options.domain}`)
-              if (options?.path) cookieOptions.push(`Path=${options.path}`)
-              if (options?.secure) cookieOptions.push('Secure')
-              if (options?.httpOnly) cookieOptions.push('HttpOnly')
-              if (options?.sameSite) cookieOptions.push(`SameSite=${options.sameSite}`)
-              
-              const cookieString = `${name}=${value}; ${cookieOptions.join('; ')}`
-              
-              const existing = res.getHeader('Set-Cookie') || []
-              const existingArray = Array.isArray(existing) ? existing : [existing]
-              res.setHeader('Set-Cookie', [...existingArray, cookieString].filter(Boolean) as string[])
-            })
-          },
-        },
-      }
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
-    const { data: { session } } = await supabase.auth.getSession()
 
-    if (!session) {
-      return res.status(401).json({ error: 'Unauthorized' })
+    // Extract the user's access token from the incoming request
+    const userToken = req.headers['authorization']?.replace('Bearer ', '')
+
+    if (!userToken) {
+      return res.status(401).json({ error: 'Unauthorized: No user token' })
     }
 
-    const { content, url } = req.body
-
-    if (!content) {
-      return res.status(400).json({ error: 'Content is required' })
+    // Verify the user
+    const { data: { user }, error: authError } = await supabase.auth.getUser(userToken)
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid token' })
     }
 
-    // Initialize AI Processor with server-side API key
-    const apiKey = process.env.OPENROUTER_API_KEY
-    if (!apiKey) {
-      return res.status(500).json({ error: 'OpenRouter API key not configured' })
+    const { entryId, content, url } = req.body
+
+    if (!entryId || !content) {
+      return res.status(400).json({ error: 'Missing required fields: entryId and content' })
     }
 
-    const aiProcessor = new AIProcessor(apiKey)
+    // Verify the entry belongs to the user
+    const { data: entry, error: entryError } = await supabase
+      .from('entries')
+      .select('id, user_id')
+      .eq('id', entryId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (entryError || !entry) {
+      return res.status(404).json({ error: 'Entry not found or access denied' })
+    }
+
+    // Initialize AI processor
+    const aiProcessor = new AIProcessor(process.env.OPENROUTER_API_KEY!)
+
+    // Analyze content with AI
     const analysis = await aiProcessor.analyzeContent(content, url)
 
-    res.status(200).json({ analysis })
+    // Update the entry with AI analysis results
+    const { error: updateError } = await supabase
+      .from('entries')
+      .update({
+        title: analysis.title,
+        ai_summary: analysis.summary,
+        ai_category: analysis.category,
+        ai_tags: analysis.tags,
+        ai_confidence_score: analysis.confidence,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', entryId)
+      .eq('user_id', user.id)
+
+    if (updateError) {
+      console.error('Database update error:', updateError)
+      return res.status(500).json({ error: 'Failed to update entry with AI analysis' })
+    }
+
+    // Return the analysis results
+    return res.status(200).json({
+      success: true,
+      analysis: {
+        title: analysis.title,
+        summary: analysis.summary,
+        category: analysis.category,
+        tags: analysis.tags,
+        confidence: analysis.confidence,
+        sentiment: analysis.sentiment,
+        urgency: analysis.urgency,
+        estimatedReadTime: analysis.estimatedReadTime,
+        suggestedScheduling: analysis.suggestedScheduling
+      }
+    })
+
   } catch (error) {
-    console.error('AI analysis error:', error)
-    res.status(500).json({ 
+    console.error('Error in AI analysis:', error)
+    return res.status(500).json({ 
       error: error instanceof Error ? error.message : 'Internal server error' 
     })
   }

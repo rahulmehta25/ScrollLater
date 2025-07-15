@@ -31,6 +31,7 @@ const CATEGORIES = [
 
 export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
   const [isLoading, setIsLoading] = useState(false)
+  const [aiProcessing, setAiProcessing] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [error, setError] = useState<string>('')
   const { user } = useAuth()
@@ -59,13 +60,9 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
   }
 
   const onSubmit = async (data: EntryFormData) => {
-    if (!user) {
-      setError('Please sign in to create an entry')
-      return
-    }
+    if (!user) return
 
     setIsLoading(true)
-    setError('')
 
     try {
       // Parse tags
@@ -74,7 +71,7 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
         : []
 
       // Create entry
-      const { data: newEntry, error: insertError } = await supabase
+      const { data: newEntry, error } = await supabase
         .from('entries')
         .insert({
           user_id: user.id,
@@ -88,54 +85,54 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
         .select()
         .single()
 
-      if (insertError) throw insertError
+      if (error) throw error
 
-      // Call secure API route for AI analysis
-      const response = await fetch('/api/ai/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: data.content,
-          url: data.url
-        })
-      })
+      // Trigger AI analysis
+      setAiProcessing(true)
+      try {
+        // Get the current access token
+        const { data: { session } } = await supabase.auth.getSession()
+        const accessToken = session?.access_token
 
-      if (!response.ok) {
-        throw new Error('Failed to analyze content with AI')
-      }
+        if (accessToken) {
+          const aiResponse = await fetch('/api/ai/analyze', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              entryId: newEntry.id,
+              content: data.content,
+              url: data.url
+            })
+          })
 
-      const { analysis } = await response.json()
-
-      // Update entry with AI analysis
-      const { error: updateError } = await supabase
-        .from('entries')
-        .update({
-          title: analysis.title,
-          ai_summary: analysis.summary,
-          ai_category: analysis.category,
-          ai_tags: analysis.tags,
-          ai_confidence_score: analysis.confidence,
-          metadata: {
-            sentiment: analysis.sentiment,
-            urgency: analysis.urgency,
-            estimated_read_time: analysis.estimatedReadTime,
-            suggested_scheduling: analysis.suggestedScheduling
+          if (aiResponse.ok) {
+            const aiResult = await aiResponse.json()
+            console.log('AI analysis completed:', aiResult)
+          } else {
+            console.error('AI analysis failed:', await aiResponse.text())
           }
-        })
-        .eq('id', newEntry.id)
-
-      if (updateError) throw updateError
+        }
+      } catch (aiError) {
+        console.error('AI analysis error:', aiError)
+        // Don't fail the entire submission if AI analysis fails
+      } finally {
+        setAiProcessing(false)
+      }
 
       // Reset form
       reset()
       setSelectedCategory('')
       onSuccess?.()
 
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create entry')
-      console.error('Entry creation error:', err)
+      // Show success message
+      // You can implement a toast notification here
+
+    } catch (error) {
+      console.error('Error creating entry:', error)
+      // Show error message
     } finally {
       setIsLoading(false)
     }
@@ -235,7 +232,15 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
           className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              Saving Entry...
+            </div>
+          ) : aiProcessing ? (
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              Analyzing with AI...
+            </div>
           ) : (
             <>
               <PlusIcon className="h-5 w-5 mr-2" />

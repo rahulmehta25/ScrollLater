@@ -2,20 +2,23 @@
 
 import { createSupabaseClient } from './supabase'
 
-export interface AIAnalysisResult {
+interface ContentAnalysis {
   title: string
   summary: string
   category: string
   tags: string[]
-  sentiment: 'positive' | 'negative' | 'neutral'
-  urgency: 'high' | 'medium' | 'low'
-  estimatedReadTime: number
-  keyPoints: string[]
-  suggestedScheduleTime?: string
   confidence: number
+  sentiment: 'positive' | 'neutral' | 'negative'
+  urgency: 'low' | 'medium' | 'high'
+  estimatedReadTime: number
+  suggestedScheduling: {
+    timeOfDay: 'morning' | 'afternoon' | 'evening'
+    duration: number
+    priority: number
+  }
 }
 
-type OpenRouterRequest = {
+interface OpenRouterRequest {
   model: string
   messages: Array<{
     role: 'system' | 'user' | 'assistant'
@@ -31,13 +34,12 @@ type OpenRouterRequest = {
 export class AIProcessor {
   private apiKey: string
   private baseUrl = 'https://openrouter.ai/api/v1/chat/completions'
-  private supabase = createSupabaseClient()
 
   constructor(apiKey: string) {
     this.apiKey = apiKey
   }
 
-  async analyzeContent(content: string, url?: string): Promise<AIAnalysisResult> {
+  async analyzeContent(content: string, url?: string): Promise<ContentAnalysis> {
     const prompt = this.buildAnalysisPrompt(content, url)
     
     try {
@@ -128,7 +130,7 @@ Respond in this exact JSON format:
     return data.choices[0]?.message?.content || ''
   }
 
-  private parseAnalysisResponse(response: string): AIAnalysisResult {
+  private parseAnalysisResponse(response: string): ContentAnalysis {
     try {
       // Clean the response to extract JSON
       const jsonMatch = response.match(/\{[\s\S]*\}/)
@@ -148,14 +150,18 @@ Respond in this exact JSON format:
         summary: parsed.summary.substring(0, 150),
         category: parsed.category,
         tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
+        confidence: Math.max(0, Math.min(1, parsed.confidence || 0.5)),
         sentiment: ['positive', 'neutral', 'negative'].includes(parsed.sentiment) 
           ? parsed.sentiment : 'neutral',
         urgency: ['low', 'medium', 'high'].includes(parsed.urgency) 
           ? parsed.urgency : 'medium',
         estimatedReadTime: Math.max(1, Math.min(120, parsed.estimatedReadTime || 10)),
-        keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints : [],
-        suggestedScheduleTime: parsed.suggestedScheduling?.timeOfDay,
-        confidence: Math.max(0, Math.min(1, parsed.confidence || 0.5))
+        suggestedScheduling: {
+          timeOfDay: ['morning', 'afternoon', 'evening'].includes(parsed.suggestedScheduling?.timeOfDay)
+            ? parsed.suggestedScheduling.timeOfDay : 'afternoon',
+          duration: Math.max(5, Math.min(180, parsed.suggestedScheduling?.duration || 30)),
+          priority: Math.max(1, Math.min(5, parsed.suggestedScheduling?.priority || 3))
+        }
       }
     } catch (error) {
       console.error('Failed to parse AI response:', error)
@@ -163,7 +169,8 @@ Respond in this exact JSON format:
     }
   }
 
-  public getFallbackAnalysis(content: string): AIAnalysisResult {
+  private getFallbackAnalysis(content: string): ContentAnalysis {
+    // Simple fallback analysis when AI fails
     const words = content.split(' ').length
     const estimatedReadTime = Math.max(1, Math.ceil(words / 200))
 
@@ -172,12 +179,76 @@ Respond in this exact JSON format:
       summary: content.substring(0, 150),
       category: 'Explore',
       tags: ['uncategorized'],
+      confidence: 0.3,
       sentiment: 'neutral',
       urgency: 'medium',
       estimatedReadTime,
-      keyPoints: [],
-      suggestedScheduleTime: 'afternoon',
-      confidence: 0.3
+      suggestedScheduling: {
+        timeOfDay: 'afternoon',
+        duration: Math.min(30, estimatedReadTime * 2),
+        priority: 3
+      }
+    }
+  }
+
+  async generateSchedulingSuggestions(
+    entries: Array<{ content: string; category: string; urgency: string }>,
+    userPreferences: {
+      availableHours: Array<{ start: string; end: string }>
+      preferredDuration: number
+      timezone: string
+    }
+  ): Promise<Array<{ entryId: string; suggestedTime: string; reason: string }>> {
+    const prompt = `
+Based on the following entries and user preferences, suggest optimal scheduling times:
+
+Entries:
+${entries.map((entry, index) => `${index + 1}. ${entry.content} (Category: ${entry.category}, Urgency: ${entry.urgency})`).join('\n')}
+
+User Preferences:
+- Available hours: ${userPreferences.availableHours.map(h => `${h.start}-${h.end}`).join(', ')}
+- Preferred session duration: ${userPreferences.preferredDuration} minutes
+- Timezone: ${userPreferences.timezone}
+
+Provide scheduling suggestions that:
+1. Respect user's available hours
+2. Prioritize urgent items
+3. Group similar categories when possible
+4. Consider optimal times for different types of content (e.g., learning in morning, creative work in afternoon)
+5. Avoid scheduling conflicts
+
+Respond in JSON format with an array of suggestions:
+[
+  {
+    "entryId": "1",
+    "suggestedTime": "2024-01-15T09:00:00Z",
+    "reason": "Morning slot optimal for learning content"
+  }
+]
+    `
+
+    try {
+      const response = await this.callOpenRouter({
+        model: 'anthropic/claude-3-sonnet',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a productivity expert specializing in optimal scheduling and time management.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.4
+      })
+
+      const suggestions = JSON.parse(response)
+      return Array.isArray(suggestions) ? suggestions : []
+    } catch (error) {
+      console.error('Failed to generate scheduling suggestions:', error)
+      return []
     }
   }
 }
