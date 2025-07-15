@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/contexts/AuthContext'
-import { Dashboard } from '@/components/dashboard/Dashboard'
+import { useAuth } from '../../contexts/AuthContext'
+import { Dashboard } from '../../components/dashboard/Dashboard'
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
@@ -30,7 +30,5 @@ export default function DashboardPage() {
     return null
   }
 
-  return (
-    <Dashboard />
-  )
+  return <Dashboard />
 } 
