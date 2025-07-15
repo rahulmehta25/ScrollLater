@@ -3,13 +3,20 @@
   "version": "1.0.0",
   "description": "ScrollLater - Root package with convenience scripts",
   "scripts": {
-    "dev": "cd scrolllater-frontend && npm run dev",
+    "dev": "next dev --no-turbo",
     "build": "cd scrolllater-frontend && npm run build",
     "start": "cd scrolllater-frontend && npm run start",
     "lint": "cd scrolllater-frontend && npm run lint",
     "install-deps": "cd scrolllater-frontend && npm install"
   },
-  "keywords": ["scrolllater", "productivity", "content-management"],
+  "keywords": [
+    "scrolllater",
+    "productivity",
+    "content-management"
+  ],
   "author": "ScrollLater Team",
-  "license": "MIT"
-} 
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/analytics": "^1.5.0"
+  }
+}

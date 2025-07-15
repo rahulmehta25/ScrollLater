@@ -8,6 +8,7 @@ import { EntryCard } from './EntryCard'
 import { SearchBar } from './SearchBar'
 import { FilterTabs } from './FilterTabs'
 import { StatsCards } from './StatsCards'
+import { SmartScheduler } from './SmartScheduler'
 
 type Entry = Database['public']['Tables']['entries']['Row']
 
@@ -176,6 +177,11 @@ export function Dashboard() {
         {/* Entry Form */}
         <div className="my-8">
           <EntryForm onSuccess={fetchEntries} />
+        </div>
+
+        {/* Smart Scheduler */}
+        <div className="my-8">
+          <SmartScheduler />
         </div>
 
         {/* Filters and Search */}

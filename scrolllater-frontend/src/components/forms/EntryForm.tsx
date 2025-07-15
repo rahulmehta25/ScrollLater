@@ -229,16 +229,16 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
         <button
           type="submit"
           disabled={isLoading || !contentValue}
-          className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <div className="flex items-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
               Saving Entry...
             </div>
           ) : aiProcessing ? (
             <div className="flex items-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
               Analyzing with AI...
             </div>
           ) : (
