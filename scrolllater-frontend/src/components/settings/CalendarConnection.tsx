@@ -2,139 +2,205 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { googleCalendar } from '../../lib/google-calendar';
-import { createSupabaseClient } from '../../lib/supabase';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { createSupabaseClient } from '@/lib/supabase';
 
-export function CalendarConnection() {
+export default function CalendarConnection() {
+  const { user } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createSupabaseClient();
-  const router = useRouter();
 
+  // Check connection status on mount and when user changes
   useEffect(() => {
-    const checkConnection = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          const { data: profile, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('google_calendar_connected, google_refresh_token')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profileError) {
-            console.error('Error fetching user profile:', profileError);
-            setError('Failed to check connection status');
-          } else {
-            const connected = !!(profile?.google_calendar_connected && profile?.google_refresh_token);
-            setIsConnected(connected);
-            console.log('Calendar connection status:', connected, profile);
-          }
-        }
-      } catch (err) {
-        console.error('Error checking connection:', err);
-        setError('Failed to check connection status');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkConnection();
-  }, [supabase]);
-
-  // Check for OAuth callback results
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      const calendarStatus = urlParams.get('calendar');
-      
-      if (calendarStatus === 'connected') {
-        // OAuth was successful, refresh the connection status
-        setIsConnected(true);
-        setError(null);
-        // Clean up the URL
-        const url = new URL(window.location.href);
-        url.searchParams.delete('calendar');
-        window.history.replaceState({}, document.title, url.pathname);
-      } else if (calendarStatus === 'error') {
-        setError('Failed to connect to Google Calendar. Please try again.');
-        setIsConnected(false);
-        // Clean up the URL
-        const url = new URL(window.location.href);
-        url.searchParams.delete('calendar');
-        window.history.replaceState({}, document.title, url.pathname);
-      }
+    if (user) {
+      checkConnectionStatus();
     }
-  }, []);
+  }, [user]);
+
+  const checkConnectionStatus = async () => {
+    if (!user) return;
+
+    try {
+      const { data: profile, error } = await supabase
+        .from('user_profiles')
+        .select('google_calendar_connected, google_refresh_token')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error checking connection status:', error);
+        return;
+      }
+
+      // Consider connected if both flags are true
+      const connected = !!(profile?.google_calendar_connected && profile?.google_refresh_token);
+      setIsConnected(connected);
+    } catch (error) {
+      console.error('Error checking connection status:', error);
+    }
+  };
 
   const handleConnect = async () => {
-    setLoading(true);
+    if (!user) {
+      setError('Please log in first');
+      return;
+    }
+
+    setIsLoading(true);
     setError(null);
+
     try {
-      await googleCalendar.signIn();
-      // The user will be redirected to Google OAuth
+      // Get the current session to pass the access token in state
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session?.access_token) {
+        console.error('Error getting session:', sessionError);
+        setError('Please log in again to connect Google Calendar');
+        setIsLoading(false);
+        return;
+      }
+
+      // Use the access token as state parameter for session restoration
+      const state = session.access_token;
+      
+      // Store state in sessionStorage for verification
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('google_oauth_state', state);
+      }
+
+      // Construct the Google OAuth URL
+      const params = new URLSearchParams({
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+        redirect_uri: `${window.location.origin}/api/auth/google-callback`,
+        response_type: 'code',
+        scope: 'https://www.googleapis.com/auth/calendar',
+        access_type: 'offline',
+        prompt: 'consent',
+        state: state,
+      });
+
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+      
+      // Redirect to Google OAuth
+      window.location.href = authUrl;
     } catch (error) {
-      console.error('Failed to connect to Google Calendar', error);
-      setError('Failed to connect to Google Calendar');
-      setLoading(false);
+      console.error('Error initiating OAuth:', error);
+      setError('Failed to start Google Calendar connection');
+      setIsLoading(false);
     }
   };
 
   const handleDisconnect = async () => {
-    setLoading(true);
+    if (!user) return;
+
+    setIsLoading(true);
     setError(null);
+
     try {
-      await googleCalendar.signOut();
-      setIsConnected(false);
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({
+          google_calendar_connected: false,
+          google_refresh_token: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error disconnecting:', error);
+        setError('Failed to disconnect Google Calendar');
+      } else {
+        setIsConnected(false);
+      }
     } catch (error) {
-      console.error('Failed to disconnect Google Calendar', error);
+      console.error('Error disconnecting:', error);
       setError('Failed to disconnect Google Calendar');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
+  // Check for OAuth callback parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const calendarStatus = urlParams.get('calendar');
+    const errorMessage = urlParams.get('message');
+
+    if (calendarStatus === 'connected') {
+      setIsConnected(true);
+      setError(null);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (calendarStatus === 'error') {
+      setError(errorMessage || 'Failed to connect Google Calendar');
+      setIsConnected(false);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  if (!user) {
+    return (
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-lg font-semibold mb-4">Google Calendar Connection</h3>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+          <p className="text-sm text-yellow-800">
+            <strong>Authentication Required:</strong><br />
+            You need to sign in to ScrollLater first before connecting Google Calendar.<br />
+            <a href="/" className="text-blue-600 hover:underline">Go to login page</a>
+          </p>
+        </div>
+        <p className="text-gray-600">Please log in to connect your Google Calendar.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Google Calendar Integration</h3>
+    <div className="bg-white p-6 rounded-lg shadow">
+      <h3 className="text-lg font-semibold mb-4">Google Calendar Connection</h3>
       
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700">
+          {error}
         </div>
       )}
-      
-      {loading ? (
-        <div className="flex items-center space-x-2">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      ) : isConnected ? (
+
+      <div className="flex items-center justify-between">
         <div>
-          <p className="text-green-600 mb-4">✅ Calendar is connected.</p>
-          <button
-            onClick={handleDisconnect}
-            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-          >
-            Disconnect
-          </button>
-        </div>
-      ) : (
-        <div>
-          <p className="text-gray-600 mb-4">Connect your Google Calendar to enable smart scheduling.</p>
-          <p className="text-sm text-gray-500 mb-4">
-            This will allow ScrollLater to create calendar events for your scheduled content.
+          <p className="text-gray-600">
+            {isConnected 
+              ? 'Your Google Calendar is connected and ready for scheduling.'
+              : 'Connect your Google Calendar to automatically schedule entries.'
+            }
           </p>
-          <button
-            onClick={handleConnect}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-          >
-            Connect Google Calendar
-          </button>
+          {isConnected && (
+            <p className="text-sm text-green-600 mt-1">
+              ✓ Calendar events will be created automatically
+            </p>
+          )}
         </div>
-      )}
+        
+        <button
+          onClick={isConnected ? handleDisconnect : handleConnect}
+          disabled={isLoading}
+          className={`px-4 py-2 rounded font-medium ${
+            isConnected
+              ? 'bg-red-500 hover:bg-red-600 text-white'
+              : 'bg-blue-500 hover:bg-blue-600 text-white'
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+          {isLoading ? (
+            <span className="flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              {isConnected ? 'Disconnecting...' : 'Connecting...'}
+            </span>
+          ) : (
+            isConnected ? 'Disconnect' : 'Connect'
+          )}
+        </button>
+      </div>
     </div>
   );
 }

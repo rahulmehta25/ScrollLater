@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
+import { createServerSupabaseClient } from '../../../lib/supabase'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const supabase = createPagesServerClient({ req, res })
+  const supabase = createServerSupabaseClient(req, res)
   const {
     entryId,
     title,
@@ -29,11 +29,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Call the Supabase Edge Function
+    // Call the Supabase Edge Function with service role key
     const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/calendar-integration`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${session.access_token}`,
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -41,7 +41,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         title,
         description,
         startTime,
-        duration
+        duration,
+        userId: session.user.id // Pass user ID for the Edge Function
       })
     })
 

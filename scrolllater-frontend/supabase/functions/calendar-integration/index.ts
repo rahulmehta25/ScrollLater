@@ -13,6 +13,7 @@ interface CalendarEventRequest {
   description: string;
   startTime: string;
   duration: number; // in minutes
+  userId: string; // Add user ID to the request
 }
 
 serve(async (req) => {
@@ -80,25 +81,23 @@ serve(async (req) => {
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
-    if (authError || !user) {
+    const { entryId, title, description, startTime, duration, userId }: CalendarEventRequest = await req.json()
+    
+    if (!userId) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Missing userId' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    const { entryId, title, description, startTime, duration }: CalendarEventRequest = await req.json()
 
     // Get user's Google Calendar refresh token
     const { data: userProfile, error: profileError } = await supabaseClient
       .from('user_profiles')
       .select('google_refresh_token, default_calendar_id')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (profileError || !userProfile?.google_refresh_token) {
@@ -135,7 +134,7 @@ serve(async (req) => {
             default_calendar_id: null,
             updated_at: new Date().toISOString()
           })
-          .eq('id', user.id)
+          .eq('id', userId)
 
         return new Response(
           JSON.stringify({ error: 'invalid_token', message: 'Google Calendar connection lost. Please reconnect.' }),
@@ -198,7 +197,7 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       })
       .eq('id', entryId)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
 
     if (updateError) {
       throw new Error(`Database update error: ${updateError.message}`)

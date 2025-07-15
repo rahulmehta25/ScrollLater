@@ -58,16 +58,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('AuthProvider: Setting up auth state listener...');
 
     // Immediately check for an existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('AuthProvider: Initial session fetch:', session?.user?.email);
-      setUser(session?.user ?? null);
-      setSession(session);
-      setLoading(false);
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('AuthProvider: Initial session fetch:', session?.user?.email, 'Error:', error);
+        
+        if (error) {
+          console.error('Session fetch error:', error);
+        }
+        
+        setUser(session?.user ?? null);
+        setSession(session);
+        setLoading(false);
 
-      if (session?.user) {
-        ensureUserProfile(session.user);
+        if (session?.user) {
+          ensureUserProfile(session.user);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setLoading(false);
       }
-    });
+    };
+
+    checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -82,7 +95,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Also listen for storage events (in case session is restored from another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'sb-access-token' || e.key === 'sb-refresh-token') {
+        console.log('AuthProvider: Storage change detected, rechecking session...');
+        checkSession();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [supabase, mounted, ensureUserProfile]);
 
   const generateShortcutToken = () => {

@@ -1,5 +1,5 @@
 // src/app/dashboard/settings/page.tsx
-import { CalendarConnection } from '../../../components/settings/CalendarConnection';
+import CalendarConnection from '../../../components/settings/CalendarConnection';
 import { ShortcutSetup } from '../../../components/settings/ShortcutSetup';
 
 export default function SettingsPage() {

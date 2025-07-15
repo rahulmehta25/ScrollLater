@@ -44,9 +44,16 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             ScrollLater
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-600 mb-4">
             Capture and schedule your ideas
           </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-blue-800">
+              <strong>Authentication Flow:</strong><br />
+              1. Sign in to ScrollLater first<br />
+              2. Then connect Google Calendar in Settings
+            </p>
+          </div>
         </div>
         <div className="bg-white p-8 rounded-lg shadow-md">
           <LoginForm />
