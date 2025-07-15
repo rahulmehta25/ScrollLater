@@ -1,5 +1,6 @@
 // src/lib/supabase.ts
-import { createClientComponentClient, createPagesServerClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './database.types'
 
@@ -9,12 +10,39 @@ export type Json = string | number | boolean | null | { [key: string]: Json } | 
 
 // Client-side Supabase client (for use in Client Components)
 export const createSupabaseClient = () => {
-  return createClientComponentClient<Database>()
+  return createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 }
 
-// Server-side Supabase client (for use in API routes with proper cookie handling)
-export const createServerSupabaseClient = (req: any, res: any) => {
-  return createPagesServerClient<Database>({ req, res })
+// Server-side Supabase client for App Router (for use in Server Components)
+export const createServerSupabaseClient = async () => {
+  const { cookies } = await import('next/headers')
+  const cookieStore = await cookies()
+  
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet: Array<{ name: string; value: string; options?: { maxAge?: number; domain?: string; path?: string; secure?: boolean; httpOnly?: boolean; sameSite?: string } }>) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options)
+            })
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    }
+  )
 }
 
 // Service role client (for use in server-side logic with elevated privileges)

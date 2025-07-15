@@ -14,6 +14,7 @@ import {
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
 import type { Database } from '../../lib/supabase'
+import { createSupabaseClient } from '@/lib/supabase'
 
 type Entry = Database['public']['Tables']['entries']['Row']
 
@@ -38,6 +39,8 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
   const [scheduleDuration, setScheduleDuration] = useState(60)
   const [scheduleError, setScheduleError] = useState<string | null>(null)
   const [scheduleSuccess, setScheduleSuccess] = useState<string | null>(null)
+
+  const supabase = createSupabaseClient();
 
   const handleStatusChange = async (newStatus: Entry['status']) => {
     setIsLoading(true)
@@ -71,10 +74,21 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
     try {
       // Combine date and time
       const scheduledDateTime = new Date(`${scheduleDate}T${scheduleTime}:00`)
+      // Get the current access token from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        setScheduleError('Authentication error. Please log in again.');
+        setIsLoading(false);
+        return;
+      }
       // Call backend API to schedule event
       const res = await fetch('/api/calendar/schedule', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
         body: JSON.stringify({
           entryId: item.id,
           title: item.title || item.content.substring(0, 60),

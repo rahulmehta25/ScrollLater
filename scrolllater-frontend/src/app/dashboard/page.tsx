@@ -30,5 +30,7 @@ export default function DashboardPage() {
     return null
   }
 
-  return <Dashboard />
+  return (
+    <Dashboard />
+  )
 } 

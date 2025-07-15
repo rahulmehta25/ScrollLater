@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { createSupabaseClient } from '@/lib/supabase';
 
 interface AuthContextType {
@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     try {
-      console.log('Ensuring user profile for:', user.email);
+      console.log('AuthProvider: Ensuring user profile for:', user.email);
       
       // Use upsert to create the profile if it doesn't exist
       const { error } = await supabase
@@ -43,116 +43,86 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }, { onConflict: 'id' });
 
       if (error) {
-        console.error('Error ensuring user profile:', error);
+        console.error('AuthProvider: Error ensuring user profile:', error);
       } else {
-        console.log('User profile ensured successfully');
+        console.log('AuthProvider: User profile ensured successfully');
       }
     } catch (error) {
-      console.error('Error in ensureUserProfile:', error);
+      console.error('AuthProvider: Error in ensureUserProfile:', error);
     }
   }, [supabase]);
+
+  const updateAuthState = useCallback((newSession: Session | null) => {
+    setUser(newSession?.user ?? null);
+    setSession(newSession);
+    setLoading(false);
+    
+    if (newSession?.user) {
+      ensureUserProfile(newSession.user);
+    }
+  }, [ensureUserProfile]);
 
   useEffect(() => {
     if (!mounted) return;
 
     console.log('AuthProvider: Setting up auth state listener...');
 
-    // Immediately check for an existing session
-    const checkSession = async () => {
+    // Get initial session
+    const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('AuthProvider: Initial session fetch:', session?.user?.email, 'Error:', error);
         
         if (error) {
-          console.error('Session fetch error:', error);
-        }
-        
-        setUser(session?.user ?? null);
-        setSession(session);
-        setLoading(false);
-
-        if (session?.user) {
-          ensureUserProfile(session.user);
+          console.error('AuthProvider: Initial session fetch error:', error);
+        } else {
+          console.log('AuthProvider: Initial session:', {
+            hasSession: !!session,
+            userEmail: session?.user?.email
+          });
+          updateAuthState(session);
         }
       } catch (error) {
-        console.error('Error checking session:', error);
+        console.error('AuthProvider: Error getting initial session:', error);
         setLoading(false);
       }
     };
 
-    // Check session immediately
-    checkSession();
+    getInitialSession();
 
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('AuthProvider: Auth state changed:', event, session?.user?.email);
-        setUser(session?.user ?? null);
-        setSession(session);
-        setLoading(false);
+      async (event: AuthChangeEvent, session: Session | null) => {
+        console.log('AuthProvider: Auth state changed:', {
+          event,
+          userEmail: session?.user?.email,
+          hasSession: !!session
+        });
+        
+        updateAuthState(session);
 
         if (event === 'SIGNED_IN' && session?.user) {
-          ensureUserProfile(session.user);
+          console.log('AuthProvider: ✅ User signed in:', session.user.email);
+        } else if (event === 'SIGNED_OUT') {
+          console.log('AuthProvider: User signed out');
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('AuthProvider: ✅ Token refreshed for:', session?.user?.email);
         }
       }
     );
 
-    // Listen for storage events (in case session is restored from another tab)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'sb-access-token' || e.key === 'sb-refresh-token') {
-        console.log('AuthProvider: Storage change detected, rechecking session...');
-        checkSession();
-      }
-    };
-
-    // Listen for URL changes (for OAuth callbacks)
-    const handleUrlChange = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const hasOAuthParams = urlParams.has('code') || urlParams.has('calendar');
-      
-      if (hasOAuthParams) {
-        console.log('AuthProvider: OAuth callback detected, rechecking session...');
-        // Multiple attempts to ensure session is restored
-        const attemptSessionRestore = async (attempts = 0) => {
-          if (attempts >= 5) {
-            console.log('AuthProvider: Max attempts reached, forcing page reload...');
-            window.location.reload();
-            return;
-          }
-          
-          await checkSession();
-          
-          // If still no user after 1 second, try again
-          setTimeout(() => {
-            if (!user) {
-              console.log(`AuthProvider: Session restore attempt ${attempts + 1}, retrying...`);
-              attemptSessionRestore(attempts + 1);
-            }
-          }, 1000);
-        };
-        
-        attemptSessionRestore();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('popstate', handleUrlChange);
-    
-    // Check for OAuth callback on initial load
-    handleUrlChange();
-
+    // Cleanup function
     return () => {
+      console.log('AuthProvider: Cleaning up auth listener...');
       subscription.unsubscribe();
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('popstate', handleUrlChange);
     };
-  }, [supabase, mounted, ensureUserProfile]);
+  }, [supabase, mounted, updateAuthState]);
 
   const generateShortcutToken = () => {
     return 'sl_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   };
 
   const signOut = async () => {
+    console.log('AuthProvider: Signing out...');
     await supabase.auth.signOut();
   };
 
@@ -163,22 +133,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
         </div>
       </div>
     );
   }
 
-  const value = {
-    user,
-    session,
-    loading,
-    signOut
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, session, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createServerSupabaseClient } from '../../../lib/supabase';
+import { createServerClient } from '@supabase/ssr';
 
 // Helper function to retry fetch with exponential backoff
 async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3): Promise<Response> {
@@ -37,7 +37,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const supabase = createServerSupabaseClient(req, res);
+    // Create Supabase client for API route
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            const cookies: { name: string; value: string }[] = []
+            // Get cookies from request headers
+            const cookieHeader = req.headers.cookie
+            if (cookieHeader) {
+              cookieHeader.split(';').forEach(cookie => {
+                const [name, value] = cookie.trim().split('=')
+                if (name && value) {
+                  cookies.push({ name, value })
+                }
+              })
+            }
+            return cookies
+          },
+          setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              const cookieOptions: string[] = []
+              if (options?.maxAge) cookieOptions.push(`Max-Age=${options.maxAge}`)
+              if (options?.domain) cookieOptions.push(`Domain=${options.domain}`)
+              if (options?.path) cookieOptions.push(`Path=${options.path}`)
+              if (options?.secure) cookieOptions.push('Secure')
+              if (options?.httpOnly) cookieOptions.push('HttpOnly')
+              if (options?.sameSite) cookieOptions.push(`SameSite=${options.sameSite}`)
+              
+              const cookieString = `${name}=${value}; ${cookieOptions.join('; ')}`
+              
+              // Set cookie header
+              const existing = res.getHeader('Set-Cookie') || []
+              const existingArray = Array.isArray(existing) ? existing : [existing]
+              res.setHeader('Set-Cookie', [...existingArray, cookieString].filter(Boolean) as string[])
+            })
+          },
+        },
+      }
+    )
 
     // Log the values being sent to Google
     console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID);

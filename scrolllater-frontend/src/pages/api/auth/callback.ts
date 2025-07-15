@@ -1,14 +1,15 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { createServerClient } from '@supabase/ssr'
-import { AIProcessor } from '@/lib/ai-processor'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
+  if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  try {
-    // Verify authentication
+  const { code, next } = req.query
+
+  if (code) {
+    // Create Supabase client for API route
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -16,6 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         cookies: {
           getAll() {
             const cookies: { name: string; value: string }[] = []
+            // Get cookies from request headers
             const cookieHeader = req.headers.cookie
             if (cookieHeader) {
               cookieHeader.split(';').forEach(cookie => {
@@ -39,6 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               
               const cookieString = `${name}=${value}; ${cookieOptions.join('; ')}`
               
+              // Set cookie header
               const existing = res.getHeader('Set-Cookie') || []
               const existingArray = Array.isArray(existing) ? existing : [existing]
               res.setHeader('Set-Cookie', [...existingArray, cookieString].filter(Boolean) as string[])
@@ -47,32 +50,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       }
     )
-    const { data: { session } } = await supabase.auth.getSession()
-
-    if (!session) {
-      return res.status(401).json({ error: 'Unauthorized' })
+    
+    // Exchange the code for a session
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code as string)
+    
+    if (error) {
+      console.error('Auth callback error:', error)
+      return res.redirect('/?error=auth_failed')
     }
 
-    const { content, url } = req.body
-
-    if (!content) {
-      return res.status(400).json({ error: 'Content is required' })
+    if (data.session) {
+      console.log('✅ Auth callback successful for user:', data.session.user.email)
+      // Redirect to the intended page or dashboard
+      const redirectTo = next ? decodeURIComponent(next as string) : '/dashboard'
+      return res.redirect(redirectTo)
     }
-
-    // Initialize AI Processor with server-side API key
-    const apiKey = process.env.OPENROUTER_API_KEY
-    if (!apiKey) {
-      return res.status(500).json({ error: 'OpenRouter API key not configured' })
-    }
-
-    const aiProcessor = new AIProcessor(apiKey)
-    const analysis = await aiProcessor.analyzeContent(content, url)
-
-    res.status(200).json({ analysis })
-  } catch (error) {
-    console.error('AI analysis error:', error)
-    res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Internal server error' 
-    })
   }
+
+  // If no code or session, redirect to home
+  return res.redirect('/')
 } 
