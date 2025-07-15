@@ -14,10 +14,14 @@ export default function SessionRestorer() {
         // Check if we're on a page that might have OAuth callback parameters
         const urlParams = new URLSearchParams(window.location.search);
         const calendarStatus = urlParams.get('calendar');
+        const hasCode = urlParams.has('code');
         
-        // If we have calendar connection status, try to restore session
-        if (calendarStatus) {
+        // If we have calendar connection status or OAuth code, try to restore session
+        if (calendarStatus || hasCode) {
           console.log('SessionRestorer: Detected OAuth callback, attempting session restoration...');
+          
+          // Wait a bit for the OAuth callback to complete
+          await new Promise(resolve => setTimeout(resolve, 1500));
           
           // Get the current session
           const { data: { session }, error } = await supabase.auth.getSession();
@@ -26,6 +30,8 @@ export default function SessionRestorer() {
             console.error('SessionRestorer: Error getting session:', error);
           } else if (session?.user) {
             console.log('SessionRestorer: Session restored successfully for user:', session.user.email);
+            // Force a page reload to ensure AuthProvider picks up the session
+            window.location.reload();
           } else {
             console.log('SessionRestorer: No active session found, user may need to log in');
           }

@@ -80,8 +80,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // Check session immediately
     checkSession();
 
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('AuthProvider: Auth state changed:', event, session?.user?.email);
@@ -95,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Also listen for storage events (in case session is restored from another tab)
+    // Listen for storage events (in case session is restored from another tab)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'sb-access-token' || e.key === 'sb-refresh-token') {
         console.log('AuthProvider: Storage change detected, rechecking session...');
@@ -103,11 +105,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // Listen for URL changes (for OAuth callbacks)
+    const handleUrlChange = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasOAuthParams = urlParams.has('code') || urlParams.has('calendar');
+      
+      if (hasOAuthParams) {
+        console.log('AuthProvider: OAuth callback detected, rechecking session...');
+        // Small delay to ensure OAuth callback has completed
+        setTimeout(checkSession, 1000);
+      }
+    };
+
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('popstate', handleUrlChange);
+    
+    // Check for OAuth callback on initial load
+    handleUrlChange();
 
     return () => {
       subscription.unsubscribe();
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('popstate', handleUrlChange);
     };
   }, [supabase, mounted, ensureUserProfile]);
 
