@@ -29,10 +29,17 @@ export const createServerSupabaseClient = async () => {
         getAll() {
           return cookieStore.getAll()
         },
-        setAll(cookiesToSet: Array<{ name: string; value: string; options?: { maxAge?: number; domain?: string; path?: string; secure?: boolean; httpOnly?: boolean; sameSite?: string } }>) {
+        setAll(cookiesToSet: Array<{ name: string; value: string; options?: { maxAge?: number; domain?: string; path?: string; secure?: boolean; httpOnly?: boolean; sameSite?: boolean | "lax" | "strict" | "none" } }>) {
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options)
+              let safeOptions = options;
+              if (options && typeof options.sameSite !== 'undefined') {
+                const validSameSite = [true, false, 'lax', 'strict', 'none'].includes(options.sameSite);
+                if (!validSameSite) {
+                  safeOptions = { ...options, sameSite: undefined };
+                }
+              }
+              cookieStore.set(name, value, safeOptions)
             })
           } catch {
             // The `setAll` method was called from a Server Component.
