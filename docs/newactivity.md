@@ -2,6 +2,14 @@
 
 ---
 
+> ⚠️ **DISCLAIMER (2024-07-01):**
+> 
+> ESLint errors are currently being ignored during Vercel builds by setting `ignoreDuringBuilds: true` in `next.config.js`. This is a temporary measure to allow production deployment. **All outstanding lint errors MUST be fixed before final production release.**
+> 
+> See Vercel build logs and the codebase for details on unresolved lint issues.
+
+---
+
 ## 🛠️ Project Initialization & Early Development
 
 - Initialized `scrolllater-frontend` with Next.js 15, TailwindCSS, TypeScript.
