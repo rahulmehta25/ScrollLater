@@ -84,6 +84,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? '[REDACTED]' : undefined);
     console.log('redirect_uri:', `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/google-callback`);
     console.log('code:', code);
+    console.log('DEBUG: API/auth/google-callback NEXT_PUBLIC_APP_URL', process.env.NEXT_PUBLIC_APP_URL);
 
     // Exchange the authorization code for tokens with retry logic
     const tokenResponse = await fetchWithRetry('https://oauth2.googleapis.com/token', {

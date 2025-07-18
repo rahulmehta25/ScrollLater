@@ -10,6 +10,12 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      console.log('DEBUG: NEXT_PUBLIC_APP_URL', process.env.NEXT_PUBLIC_APP_URL);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!loading && user) {
       router.push('/dashboard');
     }

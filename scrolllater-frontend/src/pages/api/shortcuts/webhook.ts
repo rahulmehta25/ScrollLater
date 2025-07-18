@@ -9,6 +9,7 @@ interface ShortcutRequest {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('DEBUG: API/shortcuts/webhook NEXT_PUBLIC_APP_URL', process.env.NEXT_PUBLIC_APP_URL);
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
