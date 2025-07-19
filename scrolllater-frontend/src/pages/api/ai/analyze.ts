@@ -7,6 +7,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  // Debug logging for environment variables
+  console.log('DEBUG: OPENROUTER_API_KEY exists:', !!process.env.OPENROUTER_API_KEY);
+  console.log('DEBUG: OPENROUTER_API_KEY length:', process.env.OPENROUTER_API_KEY?.length || 0);
+  console.log('DEBUG: OPENROUTER_API_KEY prefix:', process.env.OPENROUTER_API_KEY?.substring(0, 10) + '...');
+
   try {
     // Initialize Supabase client with service role key
     const supabase = createClient(
