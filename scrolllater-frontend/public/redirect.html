@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting to ScrollLater Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+        }
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <h2>Redirecting to your dashboard...</h2>
+        <p>Please wait while we redirect you to the new ScrollLater interface.</p>
+    </div>
+
+    <script>
+        // Extract tokens from URL hash
+        const hash = window.location.hash.substring(1);
+        const params = new URLSearchParams(hash);
+        
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+        const expiresAt = params.get('expires_at');
+        
+        if (accessToken) {
+            // Store tokens in localStorage
+            const tokenData = {
+                access_token: accessToken,
+                refresh_token: refreshToken,
+                expires_at: expiresAt,
+                token_type: 'bearer'
+            };
+            
+            // Store in localStorage
+            localStorage.setItem('supabase.auth.token', JSON.stringify(tokenData));
+            
+            // Redirect to Lovable frontend
+            setTimeout(() => {
+                window.location.href = 'http://localhost:8080/app';
+            }, 1000);
+        } else {
+            // No token found, redirect to sign in
+            setTimeout(() => {
+                window.location.href = 'http://localhost:8080/auth/signin';
+            }, 1000);
+        }
+    </script>
+</body>
+</html> 
