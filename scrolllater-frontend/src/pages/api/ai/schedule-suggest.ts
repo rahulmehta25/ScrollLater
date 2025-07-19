@@ -30,6 +30,10 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  // Debug logging for environment variables
+  console.log('DEBUG: schedule-suggest OPENROUTER_API_KEY exists:', !!process.env.OPENROUTER_API_KEY);
+  console.log('DEBUG: schedule-suggest OPENROUTER_API_KEY length:', process.env.OPENROUTER_API_KEY?.length || 0);
+
   try {
     // Initialize Supabase client
     const supabase = createClient(
@@ -140,7 +144,7 @@ Respond in JSON format:
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`,
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://scrolllater.app',
         'X-Title': 'ScrollLater'
