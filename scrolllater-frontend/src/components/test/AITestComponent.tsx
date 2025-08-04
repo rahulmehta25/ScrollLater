@@ -13,6 +13,18 @@ interface AIAnalysisResult {
   sentiment?: string
   urgency?: string
   estimatedReadTime?: number
+  message?: string
+  processingTime?: string
+  analysis?: {
+    title: string
+    summary: string
+    category: string
+    tags: string[]
+    confidence?: number
+    sentiment?: string
+    urgency?: string
+    estimatedReadTime?: number
+  }
   [key: string]: unknown
 }
 

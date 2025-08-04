@@ -68,7 +68,7 @@ export class BatchProcessor {
           return {
             entryId: item.entryId,
             success: true,
-            analysis,
+            analysis: analysis as unknown as Record<string, unknown>,
             processingTime
           }
         } catch (error) {

@@ -22,6 +22,20 @@ interface SchedulingSuggestion {
   duration: number
 }
 
+interface UserProfile {
+  preferred_scheduling_times?: Array<{
+    time: string
+    duration: number
+  }>
+  default_block_duration?: number
+  timezone?: string
+}
+
+interface ScheduledEntry {
+  scheduled_for: string
+  duration?: number
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -82,7 +96,7 @@ export default async function handler(
       entries,
       new Date(weekStart),
       new Date(weekEnd),
-      userProfile,
+      userProfile || { preferred_scheduling_times: [] },
       existingScheduled || []
     )
 
@@ -98,8 +112,8 @@ async function generateAISuggestions(
   entries: Entry[],
   weekStart: Date,
   weekEnd: Date,
-  userProfile: any,
-  existingScheduled: any[]
+  userProfile: UserProfile,
+  existingScheduled: ScheduledEntry[]
 ): Promise<SchedulingSuggestion[]> {
   try {
     // Prepare the prompt for AI
@@ -189,7 +203,7 @@ Respond in JSON format:
     } catch (parseError) {
       console.error('Failed to parse AI response:', parseError)
       // Fallback: generate basic suggestions
-      suggestions = generateFallbackSuggestions(entries, weekStart, weekEnd)
+      suggestions = generateFallbackSuggestions(entries, weekStart)
     }
 
     // Validate and clean suggestions
@@ -207,14 +221,13 @@ Respond in JSON format:
 
   } catch (error) {
     console.error('Error generating AI suggestions:', error)
-    return generateFallbackSuggestions(entries, weekStart, weekEnd)
+    return generateFallbackSuggestions(entries, weekStart)
   }
 }
 
 function generateFallbackSuggestions(
   entries: Entry[],
-  weekStart: Date,
-  weekEnd: Date
+  weekStart: Date
 ): SchedulingSuggestion[] {
   const suggestions: SchedulingSuggestion[] = []
   const workingHours = [9, 10, 11, 14, 15, 16] // 9 AM, 10 AM, 11 AM, 2 PM, 3 PM, 4 PM

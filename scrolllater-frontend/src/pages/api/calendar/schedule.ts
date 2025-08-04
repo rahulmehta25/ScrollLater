@@ -81,8 +81,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       eventId: data.eventId,
       eventUrl: data.eventUrl
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('API route /api/calendar/schedule unexpected error:', error)
-    return res.status(500).json({ error: error.message || 'Internal server error' })
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Internal server error' })
   }
 } 

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createServerClient } from '@supabase/ssr';
+import { createApiSupabaseClient } from '@/lib/supabase-api';
 
 // Helper function to retry fetch with exponential backoff
 async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3): Promise<Response> {
@@ -10,8 +10,8 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
         signal: AbortSignal.timeout(15000), // 15 second timeout
       });
       return response;
-    } catch (error: any) {
-      console.log(`Attempt ${attempt} failed:`, error.message);
+    } catch (error) {
+      console.log(`Attempt ${attempt} failed:`, error instanceof Error ? error.message : 'Unknown error');
       
       if (attempt === maxRetries) {
         throw error;
@@ -38,46 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // Create Supabase client for API route
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            const cookies: { name: string; value: string }[] = []
-            // Get cookies from request headers
-            const cookieHeader = req.headers.cookie
-            if (cookieHeader) {
-              cookieHeader.split(';').forEach(cookie => {
-                const [name, value] = cookie.trim().split('=')
-                if (name && value) {
-                  cookies.push({ name, value })
-                }
-              })
-            }
-            return cookies
-          },
-          setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              const cookieOptions: string[] = []
-              if (options?.maxAge) cookieOptions.push(`Max-Age=${options.maxAge}`)
-              if (options?.domain) cookieOptions.push(`Domain=${options.domain}`)
-              if (options?.path) cookieOptions.push(`Path=${options.path}`)
-              if (options?.secure) cookieOptions.push('Secure')
-              if (options?.httpOnly) cookieOptions.push('HttpOnly')
-              if (options?.sameSite) cookieOptions.push(`SameSite=${options.sameSite}`)
-              
-              const cookieString = `${name}=${value}; ${cookieOptions.join('; ')}`
-              
-              // Set cookie header
-              const existing = res.getHeader('Set-Cookie') || []
-              const existingArray = Array.isArray(existing) ? existing : [existing]
-              res.setHeader('Set-Cookie', [...existingArray, cookieString].filter(Boolean) as string[])
-            })
-          },
-        },
-      }
-    )
+    const supabase = createApiSupabaseClient()
 
     // Log the values being sent to Google
     console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID);
@@ -108,7 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const tokenData = await tokenResponse.json();
-    const { access_token, refresh_token, expires_in } = tokenData;
+    const { refresh_token } = tokenData;
 
     console.log('Token exchange successful, refresh_token received:', !!refresh_token);
 
@@ -184,15 +145,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Redirect back to settings page with success
     res.redirect('/dashboard/settings?calendar=connected');
-  } catch (error: any) {
+  } catch (error) {
     console.error('Google OAuth callback error:', error);
     
     // Provide more specific error messages based on the error type
     let errorMessage = 'Unexpected error occurred';
-    if (error.code === 'UND_ERR_CONNECT_TIMEOUT') {
-      errorMessage = 'Network timeout - please check your internet connection and try again';
-    } else if (error.message?.includes('fetch failed')) {
-      errorMessage = 'Network error - please check your internet connection and try again';
+    if (error instanceof Error) {
+      if ('code' in error && error.code === 'UND_ERR_CONNECT_TIMEOUT') {
+        errorMessage = 'Network timeout - please check your internet connection and try again';
+      } else if (error.message?.includes('fetch failed')) {
+        errorMessage = 'Network error - please check your internet connection and try again';
+      } else {
+        errorMessage = error.message;
+      }
     }
     
     res.redirect(`/dashboard/settings?calendar=error&message=${encodeURIComponent(errorMessage)}`);

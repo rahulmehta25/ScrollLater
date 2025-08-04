@@ -207,7 +207,7 @@ export class SmartScheduler {
     const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000)
     
     // Generate available slots for the week
-    const availableSlots = this.generateWeeklySlots(weekStart, weekEnd, userPattern)
+    const availableSlots = this.generateWeeklySlots(weekStart, weekEnd)
     const scheduledSlots: Array<{ start: Date; end: Date }> = []
 
     // Sort entries by priority (urgency + AI confidence)
@@ -250,8 +250,7 @@ export class SmartScheduler {
 
   private generateWeeklySlots(
     weekStart: Date,
-    weekEnd: Date,
-    _userPattern: UserPattern
+    weekEnd: Date
   ): Array<{ start: Date; end: Date }> {
     const slots = []
     const current = new Date(weekStart)

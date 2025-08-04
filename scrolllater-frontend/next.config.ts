@@ -12,9 +12,6 @@ const nextConfig = {
   images: {
     domains: ['images.unsplash.com', 'via.placeholder.com'],
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   async headers() {
     return [
       {
@@ -36,7 +33,7 @@ const nextConfig = {
       },
     ]
   },
-  webpack: (config: any) => {
+  webpack: (config: { resolve: { alias: Record<string, string> } }) => {
     config.resolve.alias['@'] = path.resolve(__dirname, 'src');
     return config;
   },
