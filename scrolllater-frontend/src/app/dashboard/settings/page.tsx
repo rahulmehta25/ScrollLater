@@ -7,9 +7,9 @@ import {
   ClipboardDocumentIcon, 
   CheckIcon,
   CalendarIcon,
-  CogIcon,
-  UserIcon
+  CogIcon
 } from '@heroicons/react/24/outline'
+import { ProfileSettings } from '@/components/settings/ProfileSettings'
 
 export default function SettingsPage() {
   const { user } = useAuth()
@@ -98,26 +98,11 @@ export default function SettingsPage() {
 
       <div className="space-y-8">
         {/* User Profile Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center mb-4">
-            <UserIcon className="h-6 w-6 text-gray-500 mr-2" />
-            <h2 className="text-xl font-semibold text-gray-900">Profile</h2>
-          </div>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Email</label>
-              <p className="mt-1 text-sm text-gray-900">{user?.email}</p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Display Name</label>
-              <p className="mt-1 text-sm text-gray-900">
-                {userProfile?.display_name || 'Not set'}
-              </p>
-            </div>
-          </div>
-        </div>
+        <ProfileSettings 
+          userProfile={userProfile} 
+          userEmail={user?.email} 
+          onUpdate={fetchUserProfile}
+        />
 
         {/* iOS Shortcuts Section */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -213,36 +198,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Preferences Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center mb-4">
-            <CogIcon className="h-6 w-6 text-gray-500 mr-2" />
-            <h2 className="text-xl font-semibold text-gray-900">Preferences</h2>
-          </div>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Default Session Duration</label>
-              <p className="mt-1 text-sm text-gray-900">
-                {userProfile?.default_block_duration || 30} minutes
-              </p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Timezone</label>
-              <p className="mt-1 text-sm text-gray-900">
-                {userProfile?.timezone || 'UTC'}
-              </p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Auto-schedule</label>
-              <p className="mt-1 text-sm text-gray-900">
-                {userProfile?.auto_schedule_enabled ? 'Enabled' : 'Disabled'}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   )
