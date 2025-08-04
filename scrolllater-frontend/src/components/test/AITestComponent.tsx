@@ -4,10 +4,22 @@ import { useState } from 'react'
 import { createSupabaseClient } from '@/lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 
+interface AIAnalysisResult {
+  title?: string
+  summary?: string
+  category?: string
+  tags?: string[]
+  confidence?: number
+  sentiment?: string
+  urgency?: string
+  estimatedReadTime?: number
+  [key: string]: unknown
+}
+
 export function AITestComponent() {
   const [testContent, setTestContent] = useState('Learn about React hooks and modern state management patterns for building scalable applications.')
   const [isLoading, setIsLoading] = useState(false)
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<AIAnalysisResult | null>(null)
   const [error, setError] = useState<string>('')
   const { user } = useAuth()
   const supabase = createSupabaseClient()

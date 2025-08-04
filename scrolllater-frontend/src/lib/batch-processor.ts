@@ -11,7 +11,7 @@ export interface BatchProcessingItem {
 export interface BatchProcessingResult {
   entryId: string
   success: boolean
-  analysis?: any
+  analysis?: Record<string, unknown>
   error?: string
   processingTime?: number
 }

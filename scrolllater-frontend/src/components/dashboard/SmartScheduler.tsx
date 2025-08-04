@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createSupabaseClient } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { CalendarIcon, ClockIcon, SparklesIcon, CheckIcon } from '@heroicons/react/24/outline'
@@ -29,14 +29,7 @@ export function SmartScheduler() {
   const { user } = useAuth()
   const supabase = createSupabaseClient()
 
-  useEffect(() => {
-    if (user) {
-      generateSuggestions()
-      generateTimeSlots()
-    }
-  }, [user, selectedDate])
-
-  const generateSuggestions = async () => {
+  const generateSuggestions = useCallback(async () => {
     setLoading(true)
     try {
       // Get unscheduled entries
@@ -80,9 +73,9 @@ export function SmartScheduler() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user, selectedDate, supabase])
 
-  const generateTimeSlots = () => {
+  const generateTimeSlots = useCallback(() => {
     const weekStart = startOfWeek(selectedDate)
     const weekEnd = endOfWeek(selectedDate)
     const days = eachDayOfInterval({ start: weekStart, end: weekEnd })
@@ -108,10 +101,18 @@ export function SmartScheduler() {
     })
     
     setTimeSlots(slots)
-  }
+  }, [selectedDate])
+
+  useEffect(() => {
+    if (user) {
+      generateSuggestions()
+      generateTimeSlots()
+    }
+  }, [user, generateSuggestions, generateTimeSlots])
 
   const scheduleEntry = async (entryId: string, scheduledTime: Date, duration: number = 30) => {
     try {
+      // Calculate end time for calendar event
       const endTime = new Date(scheduledTime.getTime() + duration * 60000)
       
       // Update entry status
@@ -138,6 +139,7 @@ export function SmartScheduler() {
           title: `Review: ${entryId}`,
           description: 'Scheduled content review',
           startTime: scheduledTime.toISOString(),
+          endTime: endTime.toISOString(),
           duration
         })
       })

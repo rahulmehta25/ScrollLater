@@ -1,7 +1,8 @@
 // src/components/settings/CalendarConnection.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { createSupabaseClient } from '@/lib/supabase';
 
@@ -12,14 +13,7 @@ export default function CalendarConnection() {
   const [error, setError] = useState<string | null>(null);
   const supabase = createSupabaseClient();
 
-  // Check connection status on mount and when user changes
-  useEffect(() => {
-    if (user) {
-      checkConnectionStatus();
-    }
-  }, [user]);
-
-  const checkConnectionStatus = async () => {
+  const checkConnectionStatus = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -40,7 +34,14 @@ export default function CalendarConnection() {
     } catch (error) {
       console.error('Error checking connection status:', error);
     }
-  };
+  }, [user, supabase]);
+
+  // Check connection status on mount and when user changes
+  useEffect(() => {
+    if (user) {
+      checkConnectionStatus();
+    }
+  }, [user, checkConnectionStatus]);
 
   const handleConnect = async () => {
     if (!user) {
@@ -149,7 +150,7 @@ export default function CalendarConnection() {
           <p className="text-sm text-yellow-800">
             <strong>Authentication Required:</strong><br />
             You need to sign in to ScrollLater first before connecting Google Calendar.<br />
-            <a href="/" className="text-blue-600 hover:underline">Go to login page</a>
+            <Link href="/" className="text-blue-600 hover:underline">Go to login page</Link>
           </p>
         </div>
         <p className="text-gray-600">Please log in to connect your Google Calendar.</p>

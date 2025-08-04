@@ -251,7 +251,7 @@ export class SmartScheduler {
   private generateWeeklySlots(
     weekStart: Date,
     weekEnd: Date,
-    userPattern: UserPattern
+    _userPattern: UserPattern
   ): Array<{ start: Date; end: Date }> {
     const slots = []
     const current = new Date(weekStart)

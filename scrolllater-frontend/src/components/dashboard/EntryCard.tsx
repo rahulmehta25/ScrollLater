@@ -115,8 +115,8 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
       })
       setScheduleSuccess('Event scheduled!')
       setShowScheduleModal(false)
-    } catch (error: any) {
-      setScheduleError(error.message || 'Internal error')
+    } catch (error: unknown) {
+      setScheduleError(error instanceof Error ? error.message : 'Internal error')
     } finally {
       setIsLoading(false)
     }

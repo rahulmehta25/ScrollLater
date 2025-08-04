@@ -33,7 +33,7 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
   const [isLoading, setIsLoading] = useState(false)
   const [aiProcessing, setAiProcessing] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('')
-  const [error, setError] = useState<string>('')
+  const [error] = useState<string>('')
   const { user } = useAuth()
   const supabase = createSupabaseClient()
 

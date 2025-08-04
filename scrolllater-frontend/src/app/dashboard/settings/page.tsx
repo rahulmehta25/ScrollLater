@@ -166,7 +166,7 @@ export default function SettingsPage() {
               <ol className="text-sm text-blue-700 space-y-1">
                 <li>1. Open the Shortcuts app on your iPhone</li>
                 <li>2. Create a new shortcut</li>
-                <li>3. Add a "Get Contents of URL" action</li>
+                <li>3. Add a &quot;Get Contents of URL&quot; action</li>
                 <li>4. Set the URL to: <code className="bg-blue-100 px-1 rounded">https://your-domain.com/api/shortcuts/webhook</code></li>
                 <li>5. Set method to POST and add headers:</li>
                 <li className="ml-4">• Content-Type: application/json</li>

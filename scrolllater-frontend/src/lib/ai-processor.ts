@@ -1,6 +1,6 @@
 // src/lib/ai-processor.ts
 
-import { createSupabaseClient } from './supabase'
+// Removed unused import
 
 interface ContentAnalysis {
   title: string
