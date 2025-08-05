@@ -5,6 +5,7 @@ import { createSupabaseClient } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { CalendarIcon, ClockIcon, SparklesIcon, CheckIcon } from '@heroicons/react/24/outline'
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns'
+import { Tooltip } from '@/components/ui/Tooltip'
 
 interface SchedulingSuggestion {
   entryId: string
@@ -173,7 +174,12 @@ export function SmartScheduler() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <SparklesIcon className="h-6 w-6 text-purple-600 mr-2" />
-          <h2 className="text-xl font-semibold text-gray-900">Smart Scheduler</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Smart Scheduler
+            <Tooltip content="AI-powered scheduling assistant that suggests optimal times for your entries based on content type and your preferences" position="right">
+              <span className="ml-1 text-gray-400 cursor-help text-base">ⓘ</span>
+            </Tooltip>
+          </h2>
         </div>
         <button
           onClick={generateSuggestions}
@@ -186,7 +192,12 @@ export function SmartScheduler() {
 
       {/* AI Suggestions */}
       <div className="mb-8">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">AI Scheduling Suggestions</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          AI Scheduling Suggestions
+          <Tooltip content="These suggestions are based on entry content, priority, and your past scheduling patterns" position="right">
+            <span className="ml-1 text-gray-400 cursor-help text-sm">ⓘ</span>
+          </Tooltip>
+        </h3>
         {suggestions.length === 0 ? (
           <p className="text-gray-500 text-center py-8">
             {loading ? 'Analyzing your content...' : 'No suggestions available. Add more entries to get AI recommendations.'}
@@ -212,9 +223,11 @@ export function SmartScheduler() {
                     </div>
                     <p className="text-sm text-gray-600 mb-2">{suggestion.reason}</p>
                     <div className="flex items-center">
-                      <span className={`text-xs font-medium ${getConfidenceColor(suggestion.confidence)}`}>
-                        {Math.round(suggestion.confidence * 100)}% confidence
-                      </span>
+                      <Tooltip content="Higher confidence means the AI is more certain this is a good time for this type of content">
+                        <span className={`text-xs font-medium ${getConfidenceColor(suggestion.confidence)}`}>
+                          {Math.round(suggestion.confidence * 100)}% confidence
+                        </span>
+                      </Tooltip>
                     </div>
                   </div>
                   <button
@@ -233,7 +246,12 @@ export function SmartScheduler() {
 
       {/* Weekly Calendar View */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Weekly Schedule</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Weekly Schedule
+          <Tooltip content="Visual overview of your available time slots and scheduled entries for this week" position="right">
+            <span className="ml-1 text-gray-400 cursor-help text-sm">ⓘ</span>
+          </Tooltip>
+        </h3>
         <div className="grid grid-cols-7 gap-2">
           {/* Day headers */}
           {eachDayOfInterval({ start: startOfWeek(selectedDate), end: endOfWeek(selectedDate) }).map((day) => (

@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { createSupabaseClient } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { PlusIcon, LinkIcon, TagIcon } from '@heroicons/react/24/outline'
+import { Tooltip, HelpText } from '@/components/ui/Tooltip'
 
 const entrySchema = z.object({
   content: z.string().min(1, 'Please enter some content'),
@@ -145,6 +146,9 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
         <div>
           <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
             What would you like to save?
+            <Tooltip content="Paste a link, add a note, or describe any idea you want to revisit later" position="right">
+              <span className="ml-1 text-gray-400 cursor-help">ⓘ</span>
+            </Tooltip>
           </label>
           <textarea
             {...register('content')}
@@ -159,6 +163,7 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
           {errors.content && (
             <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>
           )}
+          <HelpText text="Tip: Just paste a URL and we'll extract it automatically" />
         </div>
 
         {/* URL Input */}
@@ -166,6 +171,9 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
           <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
             <LinkIcon className="inline h-4 w-4 mr-1" />
             URL (optional)
+            <Tooltip content="If this entry is about a specific webpage, add its URL here" position="right">
+              <span className="ml-1 text-gray-400 cursor-help">ⓘ</span>
+            </Tooltip>
           </label>
           <input
             {...register('url')}
@@ -182,6 +190,9 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Category
+            <Tooltip content="Choose a category to help organize your entries" position="right">
+              <span className="ml-1 text-gray-400 cursor-help">ⓘ</span>
+            </Tooltip>
           </label>
           <div className="grid grid-cols-3 gap-2">
             {CATEGORIES.map((category) => (
@@ -209,6 +220,9 @@ export function EntryForm({ onSuccess }: { onSuccess?: () => void }) {
           <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
             <TagIcon className="inline h-4 w-4 mr-1" />
             Tags (comma-separated)
+            <Tooltip content="Add tags to make your entries easier to find later" position="right">
+              <span className="ml-1 text-gray-400 cursor-help">ⓘ</span>
+            </Tooltip>
           </label>
           <input
             {...register('tags')}

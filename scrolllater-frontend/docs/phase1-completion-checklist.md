@@ -36,7 +36,7 @@ Based on the implementation guide and current codebase analysis:
 
 1. **User Profile Management**
    - ✅ Complete user settings page (ProfileSettings component)
-   - [ ] Profile photo upload
+   - ✅ Profile photo upload (ProfileSettingsWithAvatar component)
    - ✅ Timezone selection UI
    - ✅ Scheduling preferences UI (duration, auto-schedule)
 
@@ -50,22 +50,16 @@ Based on the implementation guide and current codebase analysis:
    - ✅ Loading skeletons for better UX
    - ✅ Error boundaries and fallback UI
    - ✅ Empty states for all views
-   - [ ] Tooltips and help text
+   - ✅ Tooltips and help text
 
 4. **Data Validation**
    - ✅ Form validation schemas with Zod
    - ✅ URL validation for link entries
    - ✅ Character limits and sanitization
 
-### ❌ Still Remaining (< 10%)
+### ❌ Still Remaining (< 5%)
 
-1. **Profile Enhancement**
-   - [ ] Profile photo upload functionality
-
-2. **UI Polish**
-   - [ ] Tooltips and help text implementation
-
-3. **Testing & Documentation**
+1. **Testing & Documentation**
    - [ ] Unit tests for core components
    - [ ] Integration tests for API routes
    - [ ] User documentation

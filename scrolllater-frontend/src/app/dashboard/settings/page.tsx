@@ -9,7 +9,7 @@ import {
   CalendarIcon,
   CogIcon
 } from '@heroicons/react/24/outline'
-import { ProfileSettings } from '@/components/settings/ProfileSettings'
+import { ProfileSettingsWithAvatar } from '@/components/settings/ProfileSettingsWithAvatar'
 
 export default function SettingsPage() {
   const { user } = useAuth()
@@ -24,6 +24,7 @@ export default function SettingsPage() {
     default_block_duration?: number;
     timezone?: string;
     auto_schedule_enabled?: boolean;
+    avatar_url?: string;
   } | null>(null)
   const supabase = createSupabaseClient()
 
@@ -98,7 +99,7 @@ export default function SettingsPage() {
 
       <div className="space-y-8">
         {/* User Profile Section */}
-        <ProfileSettings 
+        <ProfileSettingsWithAvatar 
           userProfile={userProfile} 
           userEmail={user?.email} 
           onUpdate={fetchUserProfile}

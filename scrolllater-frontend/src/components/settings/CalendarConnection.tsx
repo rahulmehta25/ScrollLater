@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { createSupabaseClient } from '@/lib/supabase';
+import { Tooltip } from '@/components/ui/Tooltip';
 
 export default function CalendarConnection() {
   const { user } = useAuth();
@@ -172,7 +173,12 @@ export default function CalendarConnection() {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-4">Google Calendar Connection</h3>
+      <h3 className="text-lg font-semibold mb-4">
+        Google Calendar Connection
+        <Tooltip content="Connect your Google Calendar to automatically create calendar events for scheduled entries" position="right">
+          <span className="ml-1 text-gray-400 cursor-help text-base">ⓘ</span>
+        </Tooltip>
+      </h3>
       
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700">
