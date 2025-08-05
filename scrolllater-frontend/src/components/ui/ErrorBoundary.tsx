@@ -6,6 +6,7 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 interface Props {
   children: ReactNode
   fallback?: ReactNode
+  onError?: (error: Error, errorInfo: ErrorInfo) => void
 }
 
 interface State {
@@ -24,6 +25,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo)
+    }
   }
 
   private handleReset = () => {
@@ -43,16 +47,25 @@ export class ErrorBoundary extends Component<Props, State> {
               <ExclamationTriangleIcon className="h-full w-full" />
             </div>
             <h2 className="text-lg font-semibold text-gray-900 mb-2">
-              Something went wrong
+              Oops! Something went wrong
             </h2>
             <p className="text-sm text-gray-600 mb-4">
-              {this.state.error?.message || 'An unexpected error occurred'}
+              We're sorry for the inconvenience. Please try refreshing the page.
             </p>
+            {process.env.NODE_ENV === 'development' && this.state.error && (
+              <details className="mb-4 text-left">
+                <summary className="cursor-pointer text-sm text-gray-500">Error details</summary>
+                <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto">
+                  Error: {this.state.error.message}
+                  {this.state.error.stack}
+                </pre>
+              </details>
+            )}
             <button
               onClick={this.handleReset}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
-              Try again
+              Try Again
             </button>
           </div>
         </div>

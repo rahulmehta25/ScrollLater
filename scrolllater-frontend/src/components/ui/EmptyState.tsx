@@ -1,33 +1,31 @@
-import { ReactNode } from 'react'
+import { ComponentType, ReactNode } from 'react'
 
 interface EmptyStateProps {
-  icon?: ReactNode
+  icon?: ComponentType<{ className?: string }> | ReactNode
   title: string
   description?: string
-  action?: {
-    label: string
-    onClick: () => void
-  }
+  actionLabel?: string
+  onAction?: () => void
 }
 
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({ icon: Icon, title, description, actionLabel, onAction }: EmptyStateProps) {
   return (
     <div className="text-center py-12">
-      {icon && (
+      {Icon && (
         <div className="mx-auto h-12 w-12 text-gray-400 mb-4">
-          {icon}
+          {typeof Icon === 'function' ? <Icon className="w-full h-full" /> : Icon}
         </div>
       )}
       <h3 className="text-lg font-medium text-gray-900 mb-1">{title}</h3>
       {description && (
         <p className="text-sm text-gray-500 mb-4">{description}</p>
       )}
-      {action && (
+      {actionLabel && onAction && (
         <button
-          onClick={action.onClick}
+          onClick={onAction}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
         >
-          {action.label}
+          {actionLabel}
         </button>
       )}
     </div>
@@ -45,10 +43,8 @@ export function NoEntriesEmptyState({ onCreateNew }: { onCreateNew: () => void }
       }
       title="No entries yet"
       description="Get started by capturing your first link, idea, or task"
-      action={{
-        label: "Create Entry",
-        onClick: onCreateNew
-      }}
+      actionLabel="Create Entry"
+      onAction={onCreateNew}
     />
   )
 }

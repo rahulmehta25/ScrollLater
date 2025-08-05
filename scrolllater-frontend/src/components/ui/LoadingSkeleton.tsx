@@ -1,3 +1,39 @@
+interface LoadingSkeletonProps {
+  className?: string
+  width?: string
+  height?: string
+}
+
+export function LoadingSkeleton({ 
+  className = '', 
+  width = 'w-full', 
+  height = 'h-4' 
+}: LoadingSkeletonProps) {
+  return (
+    <div className={`animate-pulse bg-gray-200 rounded ${height} ${width} ${className}`} />
+  )
+}
+
+export function ProfileSkeleton() {
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+      <div className="flex items-center space-x-4 mb-6">
+        <div className="h-20 w-20 bg-gray-300 rounded-full"></div>
+        <div className="flex-1">
+          <div className="h-6 bg-gray-300 rounded w-1/3 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </div>
+      </div>
+      <div className="space-y-4">
+        <div className="h-4 bg-gray-200 rounded w-full"></div>
+        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+      </div>
+    </div>
+  )
+}
+
 export function EntryCardSkeleton() {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
