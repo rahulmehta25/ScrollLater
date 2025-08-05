@@ -53,6 +53,17 @@ export default function CalendarConnection() {
     setError(null);
 
     try {
+      // Clear any existing connection first
+      if (isConnected) {
+        await supabase
+          .from('user_profiles')
+          .update({
+            google_calendar_connected: false,
+            google_refresh_token: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', user.id);
+      }
       // Get the current session to pass the access token in state
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
@@ -78,8 +89,9 @@ export default function CalendarConnection() {
         response_type: 'code',
         scope: 'https://www.googleapis.com/auth/calendar',
         access_type: 'offline',
-        prompt: 'consent',
+        prompt: 'select_account consent', // Force account selection + consent
         state: state,
+        login_hint: user.email || '', // Suggest the current user's email
       });
 
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
@@ -183,24 +195,43 @@ export default function CalendarConnection() {
           )}
         </div>
         
-        <button
-          onClick={isConnected ? handleDisconnect : handleConnect}
-          disabled={isLoading}
-          className={`px-4 py-2 rounded font-medium ${
-            isConnected
-              ? 'bg-red-500 hover:bg-red-600 text-white'
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
-        >
-          {isLoading ? (
-            <span className="flex items-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              {isConnected ? 'Disconnecting...' : 'Connecting...'}
-            </span>
-          ) : (
-            isConnected ? 'Disconnect' : 'Connect'
+        <div className="flex gap-2">
+          {isConnected && (
+            <button
+              onClick={handleConnect}
+              disabled={isLoading}
+              className="px-4 py-2 rounded font-medium bg-gray-500 hover:bg-gray-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Switch to a different Google account"
+            >
+              {isLoading ? (
+                <span className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Re-authenticating...
+                </span>
+              ) : (
+                'Switch Account'
+              )}
+            </button>
           )}
-        </button>
+          <button
+            onClick={isConnected ? handleDisconnect : handleConnect}
+            disabled={isLoading}
+            className={`px-4 py-2 rounded font-medium ${
+              isConnected
+                ? 'bg-red-500 hover:bg-red-600 text-white'
+                : 'bg-blue-500 hover:bg-blue-600 text-white'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {isLoading ? (
+              <span className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                {isConnected ? 'Disconnecting...' : 'Connecting...'}
+              </span>
+            ) : (
+              isConnected ? 'Disconnect' : 'Connect'
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
