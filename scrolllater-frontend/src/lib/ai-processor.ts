@@ -31,20 +31,104 @@ interface OpenRouterRequest {
   presence_penalty?: number
 }
 
+interface ModelConfig {
+  name: string
+  cost: number // cost per 1000 tokens
+  speed: 'fast' | 'medium' | 'slow'
+  accuracy: 'low' | 'medium' | 'high'
+  maxTokens: number
+}
+
+export const AI_MODELS: Record<string, ModelConfig> = {
+  'anthropic/claude-3-haiku': {
+    name: 'Claude 3 Haiku',
+    cost: 0.25,
+    speed: 'fast',
+    accuracy: 'medium',
+    maxTokens: 200000
+  },
+  'anthropic/claude-3-sonnet': {
+    name: 'Claude 3 Sonnet',
+    cost: 3.0,
+    speed: 'medium',
+    accuracy: 'high',
+    maxTokens: 200000
+  },
+  'mistralai/mistral-7b-instruct': {
+    name: 'Mistral 7B',
+    cost: 0.07,
+    speed: 'fast',
+    accuracy: 'medium',
+    maxTokens: 32000
+  },
+  'openai/gpt-3.5-turbo': {
+    name: 'GPT-3.5 Turbo',
+    cost: 0.5,
+    speed: 'fast',
+    accuracy: 'medium',
+    maxTokens: 16000
+  }
+}
+
+export enum TaskType {
+  SUMMARIZE = 'summarize',
+  CATEGORIZE = 'categorize',
+  SCHEDULE_SUGGEST = 'schedule_suggest',
+  BATCH_ANALYZE = 'batch_analyze'
+}
+
 export class AIProcessor {
   private apiKey: string
   private baseUrl = 'https://openrouter.ai/api/v1/chat/completions'
+  private modelUsage: Map<string, number> = new Map()
+  private totalCost: number = 0
 
   constructor(apiKey: string) {
     this.apiKey = apiKey
   }
 
+  // Select the best model based on task type and cost optimization
+  private selectModel(taskType: TaskType): string {
+    switch (taskType) {
+      case TaskType.SUMMARIZE:
+        return 'anthropic/claude-3-haiku' // Fast and cost-effective
+      case TaskType.CATEGORIZE:
+        return 'mistralai/mistral-7b-instruct' // Good balance
+      case TaskType.SCHEDULE_SUGGEST:
+        return 'anthropic/claude-3-sonnet' // Higher accuracy needed
+      case TaskType.BATCH_ANALYZE:
+        return 'mistralai/mistral-7b-instruct' // Cost-effective for bulk
+      default:
+        return 'openai/gpt-3.5-turbo' // Reliable fallback
+    }
+  }
+
+  // Track model usage and costs
+  private trackUsage(model: string, tokens: number) {
+    const current = this.modelUsage.get(model) || 0
+    this.modelUsage.set(model, current + tokens)
+    
+    const modelConfig = AI_MODELS[model]
+    if (modelConfig) {
+      this.totalCost += (tokens / 1000) * modelConfig.cost
+    }
+  }
+
+  getUsageStats() {
+    return {
+      modelUsage: Object.fromEntries(this.modelUsage),
+      totalCost: this.totalCost.toFixed(2),
+      tokensUsed: Array.from(this.modelUsage.values()).reduce((a, b) => a + b, 0)
+    }
+  }
+
   async analyzeContent(content: string, url?: string): Promise<ContentAnalysis> {
     const prompt = this.buildAnalysisPrompt(content, url)
+    const model = this.selectModel(TaskType.BATCH_ANALYZE)
     
     try {
       const response = await this.callOpenRouter({
-        model: 'anthropic/claude-3-haiku',
+        model,
         messages: [
           {
             role: 'system',
@@ -62,6 +146,29 @@ export class AIProcessor {
       return this.parseAnalysisResponse(response)
     } catch (error) {
       console.error('AI analysis failed:', error)
+      // Try fallback model
+      if (model !== 'openai/gpt-3.5-turbo') {
+        try {
+          const fallbackResponse = await this.callOpenRouter({
+            model: 'openai/gpt-3.5-turbo',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are an expert content analyst specializing in categorizing and summarizing digital content for productivity applications.'
+              },
+              {
+                role: 'user',
+                content: prompt
+              }
+            ],
+            max_tokens: 800,
+            temperature: 0.3
+          })
+          return this.parseAnalysisResponse(fallbackResponse)
+        } catch (fallbackError) {
+          console.error('Fallback model also failed:', fallbackError)
+        }
+      }
       return this.getFallbackAnalysis(content)
     }
   }
@@ -127,6 +234,12 @@ Respond in this exact JSON format:
     }
 
     const data = await response.json()
+    
+    // Track usage
+    if (data.usage) {
+      this.trackUsage(request.model, data.usage.total_tokens || 0)
+    }
+    
     return data.choices[0]?.message?.content || ''
   }
 
@@ -227,9 +340,11 @@ Respond in JSON format with an array of suggestions:
 ]
     `
 
+    const model = this.selectModel(TaskType.SCHEDULE_SUGGEST)
+    
     try {
       const response = await this.callOpenRouter({
-        model: 'anthropic/claude-3-sonnet',
+        model,
         messages: [
           {
             role: 'system',
@@ -249,6 +364,80 @@ Respond in JSON format with an array of suggestions:
     } catch (error) {
       console.error('Failed to generate scheduling suggestions:', error)
       return []
+    }
+  }
+
+  // Batch processing for multiple entries
+  async batchAnalyzeContent(
+    entries: Array<{ id: string; content: string; url?: string }>,
+    batchSize: number = 5
+  ): Promise<Map<string, ContentAnalysis>> {
+    const results = new Map<string, ContentAnalysis>()
+    
+    // Process in batches to avoid rate limits
+    for (let i = 0; i < entries.length; i += batchSize) {
+      const batch = entries.slice(i, i + batchSize)
+      const promises = batch.map(async (entry) => {
+        try {
+          const analysis = await this.analyzeContent(entry.content, entry.url)
+          results.set(entry.id, analysis)
+        } catch (error) {
+          console.error(`Failed to analyze entry ${entry.id}:`, error)
+          results.set(entry.id, this.getFallbackAnalysis(entry.content))
+        }
+      })
+      
+      await Promise.all(promises)
+      
+      // Add delay between batches to respect rate limits
+      if (i + batchSize < entries.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }
+    
+    return results
+  }
+
+  // Generate summary for multiple entries
+  async generateCollectiveSummary(
+    entries: Array<{ content: string; category: string }>
+  ): Promise<string> {
+    const prompt = `
+Analyze the following collection of entries and provide a cohesive summary:
+
+Entries:
+${entries.map((entry, index) => `${index + 1}. [${entry.category}] ${entry.content.substring(0, 200)}...`).join('\n')}
+
+Provide:
+1. An overall theme or pattern across these entries
+2. Key insights or connections between items
+3. Actionable recommendations based on the content
+4. Priority order for addressing these items
+
+Keep the summary concise (max 300 words) and actionable.
+    `
+
+    try {
+      const response = await this.callOpenRouter({
+        model: this.selectModel(TaskType.SUMMARIZE),
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert at identifying patterns and providing actionable insights from collections of information.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.5
+      })
+
+      return response
+    } catch (error) {
+      console.error('Failed to generate collective summary:', error)
+      return 'Unable to generate summary at this time.'
     }
   }
 }

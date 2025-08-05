@@ -15,6 +15,8 @@ import { Menu, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
 import type { Database } from '../../lib/supabase'
 import { createSupabaseClient } from '@/lib/supabase'
+import { AIAnalysisDisplay } from '@/components/ai/AIAnalysisDisplay'
+import { AIAnalyzeButton } from '@/components/ai/AIAnalyzeButton'
 
 type Entry = Database['public']['Tables']['entries']['Row']
 
@@ -39,6 +41,17 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
   const [scheduleDuration, setScheduleDuration] = useState(60)
   const [scheduleError, setScheduleError] = useState<string | null>(null)
   const [scheduleSuccess, setScheduleSuccess] = useState<string | null>(null)
+  const [aiAnalysis, setAiAnalysis] = useState(() => {
+    if (item.ai_summary || item.ai_category || item.ai_tags?.length) {
+      return {
+        summary: item.ai_summary || undefined,
+        category: item.ai_category || undefined,
+        tags: item.ai_tags || undefined,
+        confidence: item.ai_confidence_score || undefined
+      }
+    }
+    return null
+  })
 
   const supabase = createSupabaseClient();
 
@@ -231,6 +244,42 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
           {item.ai_summary || item.content}
         </p>
       </div>
+
+      {/* AI Analysis Display */}
+      {aiAnalysis && (
+        <div className="mb-4">
+          <AIAnalysisDisplay 
+            analysis={aiAnalysis}
+            onReanalyze={() => {
+              // Handle re-analysis
+              setAiAnalysis(null)
+            }}
+          />
+        </div>
+      )}
+
+      {/* AI Analyze Button - show if no analysis exists */}
+      {!aiAnalysis && item.content && (
+        <div className="mb-4">
+          <AIAnalyzeButton
+            entryId={item.id}
+            content={item.content}
+            url={item.url || undefined}
+            onAnalysisComplete={(analysis) => {
+              setAiAnalysis(analysis)
+              // Update the item through parent callback
+              onUpdate(item.id, {
+                ai_summary: analysis.summary,
+                ai_category: analysis.category,
+                ai_tags: analysis.tags,
+                ai_confidence_score: analysis.confidence
+              })
+            }}
+            size="sm"
+            variant="secondary"
+          />
+        </div>
+      )}
 
       {/* URL */}
       {item.url && (
