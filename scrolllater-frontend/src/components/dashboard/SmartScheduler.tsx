@@ -46,21 +46,20 @@ export function SmartScheduler() {
 
       if (entries && entries.length > 0) {
         // Call AI scheduling suggestion API
-        const response = await fetch('/api/ai/schedule-suggest', {
+        const response = await fetch('/api/ai/schedule', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
           },
           body: JSON.stringify({
-            entries: entries.map(entry => ({
-              id: entry.id,
-              content: entry.content,
-              category: entry.ai_category || entry.user_category,
-              urgency: entry.ai_confidence_score > 0.8 ? 'high' : 'medium'
-            })),
-            weekStart: startOfWeek(selectedDate),
-            weekEnd: endOfWeek(selectedDate)
+            entryIds: entries.map(entry => entry.id),
+            userPreferences: {
+              availableHours: [{ start: '09:00', end: '17:00' }],
+              preferredDuration: 30,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            },
+            useQueue: false
           })
         })
 
