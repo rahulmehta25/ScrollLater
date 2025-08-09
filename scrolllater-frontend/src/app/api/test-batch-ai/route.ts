@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { AIProcessor } from '@/lib/ai-processor'
 
 export async function GET() {

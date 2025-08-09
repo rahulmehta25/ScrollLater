@@ -56,7 +56,7 @@ describe('ErrorBoundary', () => {
 
   it('calls onError callback when error occurs', () => {
     const onError = jest.fn()
-    const error = new Error('Test error')
+    // const error = new Error('Test error')
     
     render(
       <ErrorBoundary onError={onError}>
@@ -80,7 +80,7 @@ describe('ErrorBoundary', () => {
       return <div>No error</div>
     }
     
-    const { rerender } = render(
+    const { } = render(
       <ErrorBoundary>
         <TestComponent />
       </ErrorBoundary>

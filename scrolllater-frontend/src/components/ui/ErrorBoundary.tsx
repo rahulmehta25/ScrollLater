@@ -50,7 +50,7 @@ export class ErrorBoundary extends Component<Props, State> {
               Oops! Something went wrong
             </h2>
             <p className="text-sm text-gray-600 mb-4">
-              We're sorry for the inconvenience. Please try refreshing the page.
+              We&apos;re sorry for the inconvenience. Please try refreshing the page.
             </p>
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="mb-4 text-left">

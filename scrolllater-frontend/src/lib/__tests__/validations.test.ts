@@ -1,6 +1,6 @@
 import {
   entryFormSchema,
-  editEntrySchema,
+  // editEntrySchema,
   profileSchema,
   searchQuerySchema,
   tagSchema,

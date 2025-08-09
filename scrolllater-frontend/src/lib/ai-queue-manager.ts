@@ -10,7 +10,7 @@ export interface QueuedTask {
   priority: number
   status: 'pending' | 'processing' | 'completed' | 'failed'
   createdAt: Date
-  result?: any
+  result?: unknown
   error?: string
 }
 
@@ -95,7 +95,7 @@ export class AIQueueManager {
   }
 
   // Process a single task
-  private async processTask(task: any) {
+  private async processTask(task: QueuedTask) {
     const startTime = Date.now()
 
     try {
@@ -103,14 +103,14 @@ export class AIQueueManager {
       const { data: entry, error: entryError } = await this.supabase
         .from('entries')
         .select('*')
-        .eq('id', task.entry_id)
+        .eq('id', task.entryId)
         .single()
 
       if (entryError || !entry) {
-        throw new Error(`Entry not found: ${task.entry_id}`)
+        throw new Error(`Entry not found: ${task.entryId}`)
       }
 
-      let result: any
+      let result: unknown
 
       switch (task.task_type as TaskType) {
         case TaskType.SUMMARIZE:
@@ -250,7 +250,7 @@ export class AIQueueManager {
         acc.totalProcessingTime = (acc.totalProcessingTime || 0) + task.processing_time_ms
       }
       return acc
-    }, {} as any)
+    }, {} as Record<string, number>)
 
     const completedCount = stats.completed || 0
     const avgProcessingTime = completedCount > 0 

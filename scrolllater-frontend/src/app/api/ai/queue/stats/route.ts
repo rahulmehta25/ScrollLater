@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { getAIQueueManager } from '@/lib/ai-queue-manager'
 

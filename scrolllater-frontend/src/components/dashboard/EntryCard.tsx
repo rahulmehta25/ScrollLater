@@ -266,13 +266,24 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
             content={item.content}
             url={item.url || undefined}
             onAnalysisComplete={(analysis) => {
-              setAiAnalysis(analysis)
+              const typedAnalysis = analysis as {
+                summary?: string
+                category?: string
+                tags?: string[]
+                confidence?: number
+              }
+              setAiAnalysis({
+                summary: typedAnalysis.summary || undefined,
+                category: typedAnalysis.category || undefined,
+                tags: typedAnalysis.tags || [],
+                confidence: typedAnalysis.confidence || undefined
+              })
               // Update the item through parent callback
               onUpdate(item.id, {
-                ai_summary: analysis.summary,
-                ai_category: analysis.category,
-                ai_tags: analysis.tags,
-                ai_confidence_score: analysis.confidence
+                ai_summary: typedAnalysis.summary,
+                ai_category: typedAnalysis.category,
+                ai_tags: typedAnalysis.tags,
+                ai_confidence_score: typedAnalysis.confidence
               })
             }}
             size="sm"

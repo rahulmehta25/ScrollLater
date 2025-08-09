@@ -88,8 +88,8 @@ export async function POST(request: NextRequest) {
 
     // Map suggestions back to entry IDs
     const schedulingSuggestions = suggestions.map((suggestion, index) => ({
-      entryId: entries[index]?.id,
-      ...suggestion
+      ...suggestion,
+      entryId: entries[index]?.id
     }))
 
     return NextResponse.json({
