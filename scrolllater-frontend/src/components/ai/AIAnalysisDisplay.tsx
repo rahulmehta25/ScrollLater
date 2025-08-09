@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Brain, Tag, Clock, TrendingUp, Calendar, ChevronDown, ChevronUp, Sparkles } from 'lucide-react'
+import { Brain, Tag, Clock, Calendar, ChevronDown, ChevronUp, Sparkles } from 'lucide-react'
 import { Tooltip } from '@/components/ui/Tooltip'
 
 interface AIAnalysis {

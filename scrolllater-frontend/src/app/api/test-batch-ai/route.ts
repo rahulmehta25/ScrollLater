@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AIProcessor } from '@/lib/ai-processor'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     console.log('Testing Batch AI Processing...')
     

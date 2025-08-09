@@ -8,7 +8,7 @@ interface AIAnalyzeButtonProps {
   entryId: string
   content: string
   url?: string
-  onAnalysisComplete?: (analysis: any) => void
+  onAnalysisComplete?: (analysis: unknown) => void
   className?: string
   variant?: 'primary' | 'secondary' | 'ghost'
   size?: 'sm' | 'md' | 'lg'

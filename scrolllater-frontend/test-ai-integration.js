@@ -8,7 +8,7 @@
 const fetch = require('node-fetch');
 
 const BASE_URL = 'http://localhost:3000';
-const API_KEY = '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';
+const API_KEY = process.env.OPENROUTER_API_KEY || 'YOUR_API_KEY_HERE';
 
 async function testEndpoint(name, endpoint, payload) {
   console.log(`\n🧪 Testing ${name}...`);
