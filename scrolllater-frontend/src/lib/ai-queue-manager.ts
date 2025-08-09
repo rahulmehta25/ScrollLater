@@ -127,22 +127,23 @@ export class AIQueueManager {
         case TaskType.SUMMARIZE:
         case TaskType.CATEGORIZE:
         case TaskType.BATCH_ANALYZE:
-          result = await this.aiProcessor.analyzeContent(
+          const analysisResult = await this.aiProcessor.analyzeContent(
             entry.content || '',
             entry.url
           )
+          result = analysisResult
           
           // Update the entry with AI results
           await this.supabase
             .from('entries')
             .update({
-              title: result.title || entry.title,
-              ai_summary: result.summary,
-              ai_category: result.category,
-              tags: result.tags,
-              sentiment: result.sentiment,
-              urgency: result.urgency,
-              estimated_read_time: result.estimatedReadTime,
+              title: analysisResult.title || entry.title,
+              ai_summary: analysisResult.summary,
+              ai_category: analysisResult.category,
+              tags: analysisResult.tags,
+              sentiment: analysisResult.sentiment,
+              urgency: analysisResult.urgency,
+              estimated_read_time: analysisResult.estimatedReadTime,
               updated_at: new Date().toISOString()
             })
             .eq('id', entry.id)
