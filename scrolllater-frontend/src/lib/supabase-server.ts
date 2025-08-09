@@ -4,16 +4,17 @@ import { cookies } from 'next/headers'
 export function createSupabaseServer() {
   const cookieStore = cookies()
 
+  // For server-side, we create a standard client
+  // Auth will be handled through cookies/headers separately
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
-        getSession: async () => {
-          const token = cookieStore.get('supabase-auth-token')
-          return token ? { data: { session: { access_token: token.value } } } : null
-        },
-      },
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false
+      }
     }
   )
 }
