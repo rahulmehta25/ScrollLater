@@ -83,8 +83,19 @@ export class AIQueueManager {
         return
       }
 
-      // Process each task
-      for (const task of tasks) {
+      // Process each task (convert from snake_case to camelCase)
+      for (const dbTask of tasks) {
+        const task: QueuedTask = {
+          id: dbTask.id,
+          entryId: dbTask.entry_id,
+          userId: dbTask.user_id,
+          taskType: dbTask.task_type,
+          priority: dbTask.priority,
+          status: dbTask.status,
+          createdAt: dbTask.created_at,
+          result: dbTask.result,
+          error: dbTask.error
+        }
         await this.processTask(task)
       }
     } catch (error) {
@@ -112,7 +123,7 @@ export class AIQueueManager {
 
       let result: unknown
 
-      switch (task.task_type as TaskType) {
+      switch (task.taskType as TaskType) {
         case TaskType.SUMMARIZE:
         case TaskType.CATEGORIZE:
         case TaskType.BATCH_ANALYZE:
@@ -142,7 +153,7 @@ export class AIQueueManager {
           const { data: profile } = await this.supabase
             .from('profiles')
             .select('preferences')
-            .eq('id', task.user_id)
+            .eq('id', task.userId)
             .single()
 
           const userPreferences = profile?.preferences || {
@@ -172,7 +183,7 @@ export class AIQueueManager {
           break
 
         default:
-          throw new Error(`Unknown task type: ${task.task_type}`)
+          throw new Error(`Unknown task type: ${task.taskType}`)
       }
 
       const processingTime = Date.now() - startTime
