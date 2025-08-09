@@ -1,9 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 
 export function createSupabaseServer() {
-  const cookieStore = cookies()
-
   // For server-side, we create a standard client
   // Auth will be handled through cookies/headers separately
   return createClient(
