@@ -600,3 +600,63 @@
 **Result:** Phase 2 AI Integration successfully implemented with advanced processing capabilities, intelligent model selection, comprehensive UI components, and production-ready queue management system.
 
 ---
+
+## 🐛 2025-01-21 - AI Scheduling Troubleshooting & Production Fixes
+
+**User Prompt:** "I am not seeing any AI scheduling in the scroll later app on vercel."
+
+**Problem Investigation:**
+- User reported AI scheduling functionality not visible in production ScrollLater app on Vercel
+- Investigated SmartScheduler component implementation and API integration
+- Found the SmartScheduler component is correctly integrated into Dashboard.tsx
+- Component includes comprehensive AI scheduling features with weekly calendar view
+
+**Critical Issues Identified:**
+1. **API Endpoint Mismatch:**
+   - SmartScheduler component calling `/api/ai/schedule-suggest` (line 49)
+   - Actual API route is `/api/ai/schedule` in the app router
+   - This would cause 404 errors preventing AI suggestions from loading
+
+2. **Request Payload Mismatch:**
+   - Component sending incorrect payload format with `entries`, `weekStart`, `weekEnd`
+   - API expects `entryIds`, `userPreferences`, `useQueue` parameters
+   - Payload structure incompatibility causing API rejections
+
+3. **Environment Variables:**
+   - OpenRouter API key showing as placeholder in Vercel environment setup
+   - Without valid API key, AI processing would fail silently
+
+**Fixes Applied:**
+1. ✅ **Fixed API Endpoint:** Updated SmartScheduler.tsx to call correct `/api/ai/schedule` endpoint
+2. ✅ **Fixed Request Payload:** Updated to send proper format:
+   ```javascript
+   {
+     entryIds: entries.map(entry => entry.id),
+     userPreferences: {
+       availableHours: [{ start: '09:00', end: '17:00' }],
+       preferredDuration: 30,
+       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+     },
+     useQueue: false
+   }
+   ```
+3. 🔄 **Environment Variables:** Verified OPENROUTER_API_KEY needs to be set in Vercel
+
+**SmartScheduler Features Confirmed:**
+- AI-powered scheduling suggestions with confidence scoring
+- Weekly calendar view with available time slots
+- One-click scheduling with Google Calendar integration
+- User preference consideration and intelligent time slot analysis
+- Real-time queue processing and batch operations
+
+**Next Steps:**
+- Verify OpenRouter API key is properly configured in Vercel environment
+- Test deployment after API fixes
+- Confirm AI scheduling functionality works in production
+
+**Status:**
+- ✅ **Code Fixes:** API endpoint and payload format corrected
+- 🔄 **Deployment:** Ready for testing after environment variable verification
+- 📝 **Documentation:** Activity logged for debugging reference
+
+---
