@@ -1,108 +1,128 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServer } from '@/lib/supabase-server'
+import { NextRequest } from 'next/server'
+import { withErrorHandler, createSuccessResponse } from '@/lib/middleware/error-handler'
+import { authMiddleware } from '@/lib/security/auth-middleware'
+import { EntriesService } from '@/lib/services/entries.service'
+import { ServiceError, ServiceErrorCode } from '@/lib/services/base.service'
 import { AIProcessor, TaskType } from '@/lib/ai-processor'
 import { getAIQueueManager } from '@/lib/ai-queue-manager'
 
-export async function POST(request: NextRequest) {
-  try {
-    const supabase = createSupabaseServer()
-    
-    // Check authentication
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+const entriesService = new EntriesService(process.env.OPENROUTER_API_KEY)
+
+/**
+ * POST /api/ai/analyze (v1 - Legacy endpoint)
+ * Analyze entry content with AI
+ * 
+ * @deprecated Use /api/v2/ai/analyze instead
+ */
+export const POST = withErrorHandler(async (request: NextRequest, context) => {
+  // Validate authentication
+  const authResult = await authMiddleware.validateAuth(request)
+  if (!authResult.isAuthenticated) {
+    throw new ServiceError(
+      'Authentication required',
+      ServiceErrorCode.UNAUTHORIZED,
+      401
+    )
+  }
+
+  const userId = authResult.session!.user.id
+  const body = await request.json()
+  const { entryId, content, url, useQueue = true } = body
+
+  // Validate required fields
+  if (!entryId || !content) {
+    throw new ServiceError(
+      'Missing required fields: entryId and content',
+      ServiceErrorCode.VALIDATION_ERROR,
+      400
+    )
+  }
+
+  // Verify entry exists and belongs to user
+  const entryResult = await entriesService.getEntry(entryId, userId)
+  if (!entryResult.success) {
+    throw entryResult.error
+  }
+
+  // If using queue, enqueue the task and return immediately
+  if (useQueue) {
+    if (!process.env.OPENROUTER_API_KEY) {
+      throw new ServiceError(
+        'AI processing not available',
+        ServiceErrorCode.EXTERNAL_SERVICE_ERROR,
+        503
       )
     }
 
-    const body = await request.json()
-    const { entryId, content, url, useQueue = true } = body
+    const queueManager = getAIQueueManager(process.env.OPENROUTER_API_KEY)
+    const taskId = await queueManager.enqueueTask(
+      entryId,
+      userId,
+      TaskType.BATCH_ANALYZE,
+      5
+    )
 
-    if (!entryId || !content) {
-      return NextResponse.json(
-        { error: 'Missing required fields: entryId and content' },
-        { status: 400 }
+    if (!taskId) {
+      throw new ServiceError(
+        'Failed to enqueue AI processing task',
+        ServiceErrorCode.EXTERNAL_SERVICE_ERROR,
+        500
       )
     }
 
-    // Verify the entry belongs to the user
-    const { data: entry, error: entryError } = await supabase
-      .from('entries')
-      .select('id, user_id')
-      .eq('id', entryId)
-      .eq('user_id', session.user.id)
-      .single()
-
-    if (entryError || !entry) {
-      return NextResponse.json(
-        { error: 'Entry not found or access denied' },
-        { status: 404 }
-      )
-    }
-
-    // If using queue, enqueue the task and return immediately
-    if (useQueue) {
-      const queueManager = getAIQueueManager(process.env.OPENROUTER_API_KEY!)
-      const taskId = await queueManager.enqueueTask(
-        entryId,
-        session.user.id,
-        TaskType.BATCH_ANALYZE,
-        5
-      )
-
-      if (!taskId) {
-        return NextResponse.json(
-          { error: 'Failed to enqueue task' },
-          { status: 500 }
-        )
-      }
-
-      return NextResponse.json({
-        success: true,
+    return createSuccessResponse(
+      {
         queued: true,
         taskId,
         message: 'Analysis task has been queued for processing'
-      })
-    }
-
-    // Direct processing (synchronous)
-    const aiProcessor = new AIProcessor(process.env.OPENROUTER_API_KEY!)
-    const analysis = await aiProcessor.analyzeContent(content, url)
-
-    // Update the entry with AI analysis results
-    const { error: updateError } = await supabase
-      .from('entries')
-      .update({
-        title: analysis.title,
-        ai_summary: analysis.summary,
-        ai_category: analysis.category,
-        tags: analysis.tags,
-        sentiment: analysis.sentiment,
-        urgency: analysis.urgency,
-        estimated_read_time: analysis.estimatedReadTime,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', entryId)
-
-    if (updateError) {
-      console.error('Database update error:', updateError)
-      return NextResponse.json(
-        { error: 'Failed to update entry with AI analysis' },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json({
-      success: true,
-      analysis
-    })
-
-  } catch (error) {
-    console.error('Error in AI analysis:', error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: 500 }
+      },
+      context,
+      200,
+      { 
+        processingMode: 'queued',
+        estimatedCompletion: new Date(Date.now() + 30000).toISOString() // 30 seconds estimate
+      }
     )
   }
-}
+
+  // Direct processing (synchronous)
+  if (!process.env.OPENROUTER_API_KEY) {
+    throw new ServiceError(
+      'AI processing not available',
+      ServiceErrorCode.EXTERNAL_SERVICE_ERROR,
+      503
+    )
+  }
+
+  const aiProcessor = new AIProcessor(process.env.OPENROUTER_API_KEY)
+  const analysis = await aiProcessor.analyzeContent(content, url)
+
+  // Update the entry with AI analysis results
+  const updateResult = await entriesService.updateEntry(entryId, userId, {
+    title: analysis.title,
+    ai_summary: analysis.summary,
+    ai_category: analysis.category,
+    ai_tags: analysis.tags,
+    // Map additional fields that may not be in the service interface
+    ...(analysis.sentiment && { sentiment: analysis.sentiment }),
+    ...(analysis.urgency && { urgency: analysis.urgency }),
+    ...(analysis.estimatedReadTime && { estimated_read_time: analysis.estimatedReadTime })
+  })
+
+  if (!updateResult.success) {
+    throw updateResult.error
+  }
+
+  return createSuccessResponse(
+    {
+      analysis,
+      entry: updateResult.data
+    },
+    context,
+    200,
+    {
+      processingMode: 'direct',
+      processingTime: context.timestamp
+    }
+  )
+})

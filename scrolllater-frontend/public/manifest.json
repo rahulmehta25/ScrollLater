@@ -1,12 +1,13 @@
 {
-  "name": "ScrollLater",
+  "name": "ScrollLater - Save Content for Later",
   "short_name": "ScrollLater",
-  "description": "Capture and schedule your ideas",
+  "description": "Capture, organize, and schedule your ideas with AI-powered insights",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f9fafb",
-  "theme_color": "#3b82f6",
+  "background_color": "#f8fafc",
+  "theme_color": "#0ea5e9",
   "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
     {
       "src": "/icon-192x192.png",
@@ -21,7 +22,44 @@
       "purpose": "maskable any"
     }
   ],
-  "categories": ["productivity", "utilities"],
+  "categories": ["productivity", "utilities", "lifestyle"],
   "lang": "en",
-  "dir": "ltr"
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Quick Save",
+      "short_name": "Save",
+      "description": "Quickly save a new entry",
+      "url": "/?action=quick-save",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "View Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your saved entries",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 } 

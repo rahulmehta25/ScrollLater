@@ -151,11 +151,15 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
   const category = item.user_category || item.ai_category;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow animate-fade-in">
+    <article 
+      className="bg-white dark:bg-secondary-900 rounded-xl shadow-soft border border-secondary-200 dark:border-secondary-800 p-4 sm:p-6 hover:shadow-medium transition-all duration-200 animate-fade-in"
+      role="article"
+      aria-label={`Entry: ${item.title || 'Untitled Entry'}`}
+    >
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+      <header className="flex items-start justify-between mb-4">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base sm:text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-2 truncate">
             {item.title || 'Untitled Entry'}
           </h3>
           
@@ -177,8 +181,11 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
         </div>
 
         {/* Actions Menu */}
-        <Menu as="div" className="relative">
-          <Menu.Button className="p-2 text-gray-400 hover:text-gray-600">
+        <Menu as="div" className="relative flex-shrink-0">
+          <Menu.Button 
+            className="p-2 text-secondary-400 hover:text-secondary-600 dark:text-secondary-500 dark:hover:text-secondary-300 rounded-lg hover:bg-secondary-100 dark:hover:bg-secondary-800 transition-colors"
+            aria-label="Entry actions menu"
+          >
             <EllipsisVerticalIcon className="h-5 w-5" />
           </Menu.Button>
           
@@ -191,14 +198,14 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
             leaveFrom="transform opacity-100 scale-100"
             leaveTo="transform opacity-0 scale-95"
           >
-            <Menu.Items className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+            <Menu.Items className="absolute right-0 mt-2 w-48 bg-white dark:bg-secondary-800 rounded-lg shadow-large ring-1 ring-secondary-200 dark:ring-secondary-700 focus:outline-none z-20">
               <div className="py-1">
                 {item.status !== 'completed' && (
                   <Menu.Item>
                     {({ active }) => (
                       <button
                         onClick={() => handleStatusChange('completed')}
-                        className={`${active ? 'bg-gray-100' : ''} flex items-center w-full px-4 py-2 text-sm text-gray-700`}
+                        className={`${active ? 'bg-secondary-100 dark:bg-secondary-700' : ''} flex items-center w-full px-4 py-2 text-sm text-secondary-700 dark:text-secondary-200 transition-colors`}
                       >
                         <CheckIcon className="h-4 w-4 mr-2" />
                         Mark as Complete
@@ -212,7 +219,7 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
                     {({ active }) => (
                       <button
                         onClick={() => handleStatusChange('archived')}
-                        className={`${active ? 'bg-gray-100' : ''} flex items-center w-full px-4 py-2 text-sm text-gray-700`}
+                        className={`${active ? 'bg-secondary-100 dark:bg-secondary-700' : ''} flex items-center w-full px-4 py-2 text-sm text-secondary-700 dark:text-secondary-200 transition-colors`}
                       >
                         <ArchiveBoxIcon className="h-4 w-4 mr-2" />
                         Archive
@@ -225,7 +232,7 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
                   {({ active }) => (
                     <button
                       onClick={handleDelete}
-                      className={`${active ? 'bg-gray-100' : ''} flex items-center w-full px-4 py-2 text-sm text-red-700`}
+                      className={`${active ? 'bg-secondary-100 dark:bg-secondary-700' : ''} flex items-center w-full px-4 py-2 text-sm text-error-700 dark:text-error-400 transition-colors`}
                     >
                       <TrashIcon className="h-4 w-4 mr-2" />
                       Delete
@@ -236,11 +243,11 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
             </Menu.Items>
           </Transition>
         </Menu>
-      </div>
+      </header>
 
       {/* Content */}
       <div className="mb-4">
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-secondary-700 dark:text-secondary-300 text-sm leading-relaxed break-words">
           {item.ai_summary || item.content}
         </p>
       </div>
@@ -389,14 +396,14 @@ export function EntryCard({ item, onUpdate, onDelete }: EntryCardProps) {
       )}
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-xs text-gray-500">
+      <footer className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs text-secondary-500 dark:text-secondary-400 pt-2 border-t border-secondary-200 dark:border-secondary-700">
         <span>
           Added {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
         </span>
         <span>
           Updated {formatDistanceToNow(new Date(item.updated_at), { addSuffix: true })}
         </span>
-      </div>
-    </div>
+      </footer>
+    </article>
   )
 } 

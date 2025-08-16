@@ -9,6 +9,10 @@ import { SearchBar } from './SearchBar'
 import { FilterTabs } from './FilterTabs'
 import { StatsCards } from './StatsCards'
 import { SmartScheduler } from './SmartScheduler'
+import { DashboardSkeleton, EntryCardSkeleton } from '@/components/ui/LoadingSkeleton'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 type Entry = Database['public']['Tables']['entries']['Row']
 
@@ -144,32 +148,39 @@ export function Dashboard() {
 
   // Show loading while auth is being determined
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading authentication...</p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   // Show message if not authenticated
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Not Authenticated</h2>
-          <p className="text-gray-600">Please sign in to access your dashboard.</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-secondary-50 dark:bg-secondary-950">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center">Not Authenticated</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-secondary-600 dark:text-secondary-400">
+              Please sign in to access your dashboard.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-secondary-50 dark:bg-secondary-950 transition-colors">
+        <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+          <header className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-secondary-900 dark:text-secondary-100">
+              Dashboard
+            </h1>
+            <p className="text-secondary-600 dark:text-secondary-400">
+              Welcome back! Here's what you've saved to read later.
+            </p>
+          </header>
 
         {/* Stats */}
         <StatsCards entries={entries} />
