@@ -133,3 +133,32 @@
   - `public/sw.js` (build update)
 - **Commit:** `64f1b70` - "Security fix: Remove hardcoded API key from test file"
 - **Branch:** feature/ai-and-ui-enhancements (pushed to remote)
+
+## 2025-08-16
+### User Prompt: "Playwright MCP Setup Instructions"
+- **Agent:** Claude Code
+- **Actions Taken:**
+  1. Installed Playwright dependencies in scrolllater-frontend:
+     - Added playwright as dev dependency (with --legacy-peer-deps due to Next.js 15 compatibility)
+     - Installed Playwright browsers
+  2. Updated CLAUDE.md configuration with Playwright MCP settings:
+     - Added MCP configuration JSON for chromium browser
+     - Updated Visual QA Workflow section with Playwright-specific instructions
+     - Added device configurations for Desktop, Mobile (iPhone 15), and Tablet (iPad Pro)
+  3. Enhanced playwright.config.ts:
+     - Added video recording on failure
+     - Updated device configurations for iPhone 15 and iPad Pro
+     - Set desktop viewport to 1280x720
+  4. Created visual-design-check.spec.ts test file with:
+     - Desktop, Mobile, and Tablet view tests
+     - Console error checking
+     - Design consistency validation
+     - Screenshot capture functionality
+  5. Created tests/__screenshots__ directory for storing visual test results
+  6. Successfully ran Playwright tests:
+     - All 5 tests passed
+     - Generated screenshots for desktop, mobile, and tablet views
+     - Verified no console errors
+     - Analyzed button styles and color consistency
+  7. Updated design-reviewer.md agent configuration to use Playwright
+- **Result:** Successfully set up Playwright for automated visual UI testing with multiple device viewports and screenshot capabilities
