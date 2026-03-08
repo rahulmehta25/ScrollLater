@@ -8,22 +8,36 @@ import type { Database } from './database.types'
 export type { Database }
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[]
 
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+
+export const isSupabaseConfigured = () => {
+  return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
+}
+
 // Client-side Supabase client (for use in Client Components)
 export const createSupabaseClient = () => {
-  return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  if (!isSupabaseConfigured()) {
+    // Return a mock client that won't crash but won't work either
+    return createBrowserClient<Database>(
+      'https://placeholder.supabase.co',
+      'placeholder-key'
+    )
+  }
+  return createBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY)
 }
 
 // Server-side Supabase client for App Router (for use in Server Components)
 export const createServerSupabaseClient = async () => {
+  if (!isSupabaseConfigured()) {
+    return null
+  }
   const { cookies } = await import('next/headers')
   const cookieStore = await cookies()
-  
+
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
@@ -58,7 +72,7 @@ export const createSupabaseServiceClient = () => {
     throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
   }
   return createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
   )
 }

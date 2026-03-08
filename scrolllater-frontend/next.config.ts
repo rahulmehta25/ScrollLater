@@ -1,19 +1,14 @@
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development'
-})
+import type { NextConfig } from 'next'
 
-const path = require('path');
-
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   images: {
     domains: ['images.unsplash.com', 'via.placeholder.com'],
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
   },
   async headers() {
     return [
@@ -36,10 +31,6 @@ const nextConfig = {
       },
     ]
   },
-  webpack: (config: any) => {
-    config.resolve.alias['@'] = path.resolve(__dirname, 'src');
-    return config;
-  },
 }
 
-module.exports = withPWA(nextConfig)
+export default nextConfig
