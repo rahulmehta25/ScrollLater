@@ -1,31 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Analytics } from '@vercel/analytics/react';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
-  title: "ScrollLater - Capture and Schedule Your Ideas",
-  description: "A mobile-first platform to capture links, ideas, and tasks from various sources and intelligently schedule time to revisit them.",
-  keywords: "productivity, content management, scheduling, AI, bookmarks",
-  authors: [{ name: "ScrollLater Team" }],
-  manifest: "/manifest.json",
+  title: "ScrollLater - Save it. Schedule it. Actually read it.",
+  description: "A smart content curation platform that helps you save, organize, and schedule time to revisit articles, videos, and ideas.",
+  keywords: "productivity, content curation, bookmarks, read later, scheduling",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#3b82f6",
+  themeColor: "#f97316",
 };
 
 export default function RootLayout({
@@ -35,9 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${inter.variable} font-sans antialiased`}>
         <AuthProvider>
           {children}
         </AuthProvider>
