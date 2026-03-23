@@ -9,6 +9,7 @@ import {
   User, Mail, Globe, Calendar, Bell, Clock,
   ArrowLeft, Loader2, Save, Camera, Check
 } from 'lucide-react'
+import { Toggle } from '@/components/ui/Toggle'
 
 const TIMEZONES = [
   'UTC',
@@ -40,6 +41,8 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [savingField, setSavingField] = useState<string | null>(null)
+  const [savedField, setSavedField] = useState<string | null>(null)
 
   // Form state
   const [displayName, setDisplayName] = useState('')
@@ -110,6 +113,20 @@ export default function ProfilePage() {
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click()
+  }
+
+  const handleNotificationToggle = async (field: string, value: boolean) => {
+    if (!user) return
+    setSavingField(field)
+    setProfile(prev => prev ? { ...prev, [field]: value } : prev)
+    const result = await updateUserProfile(user.id, { [field]: value })
+    setSavingField(null)
+    if (result.error) {
+      setProfile(prev => prev ? { ...prev, [field]: !value } : prev)
+    } else {
+      setSavedField(field)
+      setTimeout(() => setSavedField(null), 2000)
+    }
   }
 
   if (authLoading || loading) {
@@ -296,17 +313,26 @@ export default function ProfilePage() {
                 <NotificationToggle
                   label="Email notifications"
                   description="Receive email reminders for scheduled items"
-                  defaultChecked={true}
+                  checked={profile?.notification_email ?? true}
+                  onChange={(checked) => handleNotificationToggle('notification_email', checked)}
+                  saving={savingField === 'notification_email'}
+                  saved={savedField === 'notification_email'}
                 />
                 <NotificationToggle
                   label="Weekly digest"
                   description="Get a weekly summary of your saved content"
-                  defaultChecked={true}
+                  checked={profile?.notification_weekly_digest ?? true}
+                  onChange={(checked) => handleNotificationToggle('notification_weekly_digest', checked)}
+                  saving={savingField === 'notification_weekly_digest'}
+                  saved={savedField === 'notification_weekly_digest'}
                 />
                 <NotificationToggle
                   label="AI insights"
                   description="Receive AI-powered content recommendations"
-                  defaultChecked={false}
+                  checked={profile?.notification_ai_insights ?? false}
+                  onChange={(checked) => handleNotificationToggle('notification_ai_insights', checked)}
+                  saving={savingField === 'notification_ai_insights'}
+                  saved={savedField === 'notification_ai_insights'}
                 />
               </div>
             </div>
@@ -415,57 +441,32 @@ export default function ProfilePage() {
   )
 }
 
-async function updateUserPreference(key: string, value: boolean) {
-  try {
-    const { createSupabaseClient, isSupabaseConfigured } = await import('@/lib/supabase')
-    if (!isSupabaseConfigured()) return
-    const supabase = createSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    await supabase
-      .from('user_preferences')
-      .upsert({ user_id: user.id, [key]: value }, { onConflict: 'user_id' })
-  } catch (e) {
-    console.error('Failed to update preference:', e)
-  }
-}
-
 function NotificationToggle({
   label,
   description,
-  defaultChecked,
-  preferenceKey
+  checked,
+  onChange,
+  saving,
+  saved,
 }: {
   label: string
   description: string
-  defaultChecked: boolean
-  preferenceKey?: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+  saving?: boolean
+  saved?: boolean
 }) {
-  const [checked, setChecked] = useState(defaultChecked)
-
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between py-3">
       <div>
-        <h4 className="font-medium text-gray-900">{label}</h4>
-        <p className="text-sm text-gray-500">{description}</p>
+        <p className="text-sm font-medium text-gray-900">{label}</p>
+        <p className="text-xs text-gray-500">{description}</p>
       </div>
-      <button
-        type="button"
-        onClick={() => {
-          const next = !checked
-          setChecked(next)
-          if (preferenceKey) updateUserPreference(preferenceKey, next)
-        }}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-          checked ? 'bg-orange-500' : 'bg-gray-300'
-        }`}
-      >
-        <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-            checked ? 'translate-x-6' : 'translate-x-1'
-          }`}
-        />
-      </button>
+      <div className="flex items-center gap-2">
+        {saving && <Loader2 className="w-3 h-3 animate-spin text-gray-400" />}
+        {saved && !saving && <Check className="w-3 h-3 text-green-500" />}
+        <Toggle checked={checked} onChange={onChange} size="sm" />
+      </div>
     </div>
   )
 }
