@@ -1,0 +1,26 @@
+{
+  "extName": {
+    "message": "ScrollLater - Save for Later",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Save articles, videos, and content to read later. Quick save with one click.",
+    "description": "Extension description"
+  },
+  "saveToScrollLater": {
+    "message": "Save to ScrollLater",
+    "description": "Context menu item"
+  },
+  "quickSave": {
+    "message": "Quick Save",
+    "description": "Quick save button"
+  },
+  "saved": {
+    "message": "Saved!",
+    "description": "Success message"
+  },
+  "error": {
+    "message": "Error saving",
+    "description": "Error message"
+  }
+}

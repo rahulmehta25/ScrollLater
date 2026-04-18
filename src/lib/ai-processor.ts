@@ -1,3 +1,5 @@
+// src/lib/ai-processor.ts
+
 interface ContentAnalysis {
   title: string
   summary: string
@@ -31,36 +33,16 @@ export class AIProcessor {
   private apiKey: string
   private baseUrl = 'https://openrouter.ai/api/v1/chat/completions'
 
-  // Cost-optimized model selection
-  private AI_MODELS = {
-    primary: 'anthropic/claude-3-haiku',      // $0.25/1M tokens
-    fallback: 'mistralai/mistral-7b-instruct', // $0.14/1M tokens
-    emergency: 'openai/gpt-3.5-turbo'         // $0.50/1M tokens (last resort)
-  }
-
-  private MODEL_RATES = {
-    'anthropic/claude-3-haiku': 0.25,
-    'mistralai/mistral-7b-instruct': 0.14,
-    'openai/gpt-3.5-turbo': 0.50
-  }
-
   constructor(apiKey: string) {
     this.apiKey = apiKey
   }
 
   async analyzeContent(content: string, url?: string): Promise<ContentAnalysis> {
     const prompt = this.buildAnalysisPrompt(content, url)
-    const tokens = this.estimateTokens(prompt)
     
-    // Skip AI processing for very short content to save costs
-    if (tokens < 50) {
-      return this.getFallbackAnalysis(content)
-    }
-
-    // Try primary model first
     try {
       const response = await this.callOpenRouter({
-        model: this.AI_MODELS.primary,
+        model: 'anthropic/claude-3-haiku',
         messages: [
           {
             role: 'system',
@@ -75,46 +57,21 @@ export class AIProcessor {
         temperature: 0.3
       })
 
-      const analysis = this.parseAnalysisResponse(response)
-      console.log(`AI Analysis cost: $${this.estimateCost(tokens, this.AI_MODELS.primary).toFixed(6)}`)
-      return analysis
+      return this.parseAnalysisResponse(response)
     } catch (error) {
-      console.warn(`Primary model failed, trying fallback: ${error}`)
-      
-      // Try fallback model
-      try {
-        const response = await this.callOpenRouter({
-          model: this.AI_MODELS.fallback,
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert content analyst specializing in categorizing and summarizing digital content for productivity applications.'
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          max_tokens: 600,
-          temperature: 0.3
-        })
-
-        const analysis = this.parseAnalysisResponse(response)
-        console.log(`AI Analysis cost (fallback): $${this.estimateCost(tokens, this.AI_MODELS.fallback).toFixed(6)}`)
-        return analysis
-      } catch (fallbackError) {
-        console.error(`Fallback model also failed: ${fallbackError}`)
-        return this.getFallbackAnalysis(content)
-      }
+      console.error('AI analysis failed:', error)
+      return this.getFallbackAnalysis(content)
     }
   }
 
   private buildAnalysisPrompt(content: string, url?: string): string {
+    const sanitizedContent = content.replace(/"""/g, '\\"\\"\\\"').substring(0, 10000);
+    const sanitizedUrl = url ? url.replace(/"""/g, '\\"\\"\\\"').substring(0, 2000) : undefined;
     return `
 Analyze the following content and provide a comprehensive analysis in JSON format:
 
-Content: "${content}"
-${url ? `URL: ${url}` : ''}
+Content: "${sanitizedContent}"
+${sanitizedUrl ? `URL: ${sanitizedUrl}` : ''}
 
 Please provide:
 1. A concise, engaging title (max 60 characters)
@@ -161,7 +118,8 @@ Respond in this exact JSON format:
         'HTTP-Referer': 'https://scrolllater.app',
         'X-Title': 'ScrollLater'
       },
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
+      signal: AbortSignal.timeout(30000),
     })
 
     if (!response.ok) {
@@ -234,21 +192,68 @@ Respond in this exact JSON format:
     }
   }
 
-  // Cost estimation utilities
-  private estimateTokens(text: string): number {
-    // Rough estimation: 1 token ≈ 4 characters
-    return Math.ceil(text.length / 4)
-  }
+  async generateSchedulingSuggestions(
+    entries: Array<{ content: string; category: string; urgency: string }>,
+    userPreferences: {
+      availableHours: Array<{ start: string; end: string }>
+      preferredDuration: number
+      timezone: string
+    }
+  ): Promise<Array<{ entryId: string; suggestedTime: string; reason: string }>> {
+    const sanitizedEntries = entries.map(entry => ({
+      ...entry,
+      content: entry.content.replace(/"""/g, '\\"\\"\\\"').substring(0, 10000),
+    }));
+    const prompt = `
+Based on the following entries and user preferences, suggest optimal scheduling times:
 
-  private estimateCost(tokens: number, model: string): number {
-    const rate = this.MODEL_RATES[model as keyof typeof this.MODEL_RATES] || 0.25
-    return (tokens / 1000000) * rate
-  }
+Entries:
+${sanitizedEntries.map((entry, index) => `${index + 1}. ${entry.content} (Category: ${entry.category}, Urgency: ${entry.urgency})`).join('\n')}
 
-  // Get cost estimate for a given content length
-  public getCostEstimate(contentLength: number, model?: string): number {
-    const tokens = this.estimateTokens('A'.repeat(contentLength))
-    const selectedModel = model || this.AI_MODELS.primary
-    return this.estimateCost(tokens, selectedModel)
+User Preferences:
+- Available hours: ${userPreferences.availableHours.map(h => `${h.start}-${h.end}`).join(', ')}
+- Preferred session duration: ${userPreferences.preferredDuration} minutes
+- Timezone: ${userPreferences.timezone}
+
+Provide scheduling suggestions that:
+1. Respect user's available hours
+2. Prioritize urgent items
+3. Group similar categories when possible
+4. Consider optimal times for different types of content (e.g., learning in morning, creative work in afternoon)
+5. Avoid scheduling conflicts
+
+Respond in JSON format with an array of suggestions:
+[
+  {
+    "entryId": "1",
+    "suggestedTime": "2024-01-15T09:00:00Z",
+    "reason": "Morning slot optimal for learning content"
   }
-} 
+]
+    `
+
+    try {
+      const response = await this.callOpenRouter({
+        model: 'anthropic/claude-3-sonnet',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a productivity expert specializing in optimal scheduling and time management.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.4
+      })
+
+      const suggestions = JSON.parse(response)
+      return Array.isArray(suggestions) ? suggestions : []
+    } catch (error) {
+      console.error('Failed to generate scheduling suggestions:', error)
+      return []
+    }
+  }
+}

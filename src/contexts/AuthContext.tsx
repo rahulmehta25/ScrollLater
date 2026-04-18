@@ -2,13 +2,16 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createSupabaseClient, isSupabaseConfigured } from '@/lib/supabase';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isConfigured: boolean;
+  error: string | null;
   signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,130 +21,202 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
-  const supabase = createSupabaseClient();
-
-  console.log('AuthProvider: Initializing...');
+  const [error, setError] = useState<string | null>(null);
+  const isConfigured = isSupabaseConfigured();
 
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const ensureUserProfile = useCallback(async (user: User) => {
-    if (!user) return;
+  const ensureUserProfile = useCallback(async (currentUser: User) => {
+    if (!currentUser || !isConfigured) return;
 
     try {
-      console.log('AuthProvider: Ensuring user profile for:', user.email);
-      
-      // Use upsert to create the profile if it doesn't exist
-      const { error } = await supabase
+      const supabase = createSupabaseClient();
+      const { error: upsertError } = await supabase
         .from('user_profiles')
         .upsert({
-          id: user.id,
-          display_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
-          apple_shortcut_token: generateShortcutToken()
+          id: currentUser.id,
+          display_name: currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'User',
+          avatar_url: currentUser.user_metadata?.avatar_url || null,
+          apple_shortcut_token: 'sl_' + crypto.randomUUID().replace(/-/g, '').substring(0, 24)
         }, { onConflict: 'id' });
 
-      if (error) {
-        console.error('AuthProvider: Error ensuring user profile:', error);
-      } else {
-        console.log('AuthProvider: User profile ensured successfully');
+      if (upsertError) {
+        console.error('AuthProvider: Error ensuring user profile:', upsertError);
       }
-    } catch (error) {
-      console.error('AuthProvider: Error in ensureUserProfile:', error);
+    } catch (err) {
+      console.error('AuthProvider: Error in ensureUserProfile:', err);
     }
-  }, [supabase]);
+  }, [isConfigured]);
 
   const updateAuthState = useCallback((newSession: Session | null) => {
     setUser(newSession?.user ?? null);
     setSession(newSession);
     setLoading(false);
-    
+    setError(null);
+
     if (newSession?.user) {
       ensureUserProfile(newSession.user);
     }
   }, [ensureUserProfile]);
 
+  const refreshSession = useCallback(async () => {
+    if (!isConfigured) return;
+
+    try {
+      const supabase = createSupabaseClient();
+      const { data, error: refreshError } = await supabase.auth.refreshSession();
+
+      if (refreshError) {
+        console.error('AuthProvider: Error refreshing session:', refreshError);
+        setError('Session refresh failed');
+        // If refresh fails, sign out
+        await supabase.auth.signOut();
+        return;
+      }
+
+      if (data.session) {
+        updateAuthState(data.session);
+      }
+    } catch (err) {
+      console.error('AuthProvider: Error refreshing session:', err);
+      setError('An unexpected error occurred');
+    }
+  }, [isConfigured, updateAuthState]);
+
   useEffect(() => {
     if (!mounted) return;
 
-    console.log('AuthProvider: Setting up auth state listener...');
+    if (!isConfigured) {
+      setLoading(false);
+      return;
+    }
 
-    // Get initial session
+    const supabase = createSupabaseClient();
+
     const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('AuthProvider: Initial session fetch error:', error);
-        } else {
-          console.log('AuthProvider: Initial session:', {
-            hasSession: !!session,
-            userEmail: session?.user?.email
-          });
-          updateAuthState(session);
+        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError) {
+          console.error('AuthProvider: Initial session fetch error:', sessionError);
+          setError('Failed to get session');
+          setLoading(false);
+          return;
         }
-      } catch (error) {
-        console.error('AuthProvider: Error getting initial session:', error);
+
+        updateAuthState(initialSession);
+
+        // Check if session is about to expire (within 5 minutes)
+        if (initialSession?.expires_at) {
+          const expiresAt = new Date(initialSession.expires_at * 1000);
+          const now = new Date();
+          const fiveMinutes = 5 * 60 * 1000;
+
+          if (expiresAt.getTime() - now.getTime() < fiveMinutes) {
+            refreshSession();
+          }
+        }
+      } catch (err) {
+        console.error('AuthProvider: Error getting initial session:', err);
+        setError('An unexpected error occurred');
         setLoading(false);
       }
     };
 
     getInitialSession();
 
-    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session: Session | null) => {
-        console.log('AuthProvider: Auth state changed:', {
-          event,
-          userEmail: session?.user?.email,
-          hasSession: !!session
-        });
-        
-        updateAuthState(session);
+      async (event: AuthChangeEvent, newSession: Session | null) => {
+        updateAuthState(newSession);
 
-        if (event === 'SIGNED_IN' && session?.user) {
-          console.log('AuthProvider: ✅ User signed in:', session.user.email);
-        } else if (event === 'SIGNED_OUT') {
-          console.log('AuthProvider: User signed out');
-        } else if (event === 'TOKEN_REFRESHED') {
-          console.log('AuthProvider: ✅ Token refreshed for:', session?.user?.email);
+        // Handle specific auth events
+        switch (event) {
+          case 'SIGNED_OUT':
+            setUser(null);
+            setSession(null);
+            break;
+          case 'TOKEN_REFRESHED':
+            console.log('AuthProvider: Token refreshed');
+            break;
+          case 'PASSWORD_RECOVERY':
+            console.log('AuthProvider: Password recovery initiated');
+            break;
         }
       }
     );
 
-    // Cleanup function
-    return () => {
-      console.log('AuthProvider: Cleaning up auth listener...');
-      subscription.unsubscribe();
-    };
-  }, [supabase, mounted, updateAuthState]);
+    // Set up automatic session refresh
+    const refreshInterval = setInterval(() => {
+      if (session?.expires_at) {
+        const expiresAt = new Date(session.expires_at * 1000);
+        const now = new Date();
+        const fiveMinutes = 5 * 60 * 1000;
 
-  const generateShortcutToken = () => {
-    return 'sl_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  };
+        if (expiresAt.getTime() - now.getTime() < fiveMinutes) {
+          refreshSession();
+        }
+      }
+    }, 60000); // Check every minute
+
+    return () => {
+      subscription.unsubscribe();
+      clearInterval(refreshInterval);
+    };
+  }, [mounted, updateAuthState, refreshSession, isConfigured, session?.expires_at]);
 
   const signOut = async () => {
-    console.log('AuthProvider: Signing out...');
-    await supabase.auth.signOut();
+    if (!isConfigured) return;
+
+    try {
+      const supabase = createSupabaseClient();
+      const { error: signOutError } = await supabase.auth.signOut();
+
+      if (signOutError) {
+        console.error('AuthProvider: Sign out error:', signOutError);
+        setError('Failed to sign out');
+        return;
+      }
+
+      setUser(null);
+      setSession(null);
+      setError(null);
+    } catch (err) {
+      console.error('AuthProvider: Error signing out:', err);
+      setError('An unexpected error occurred');
+    }
   };
 
-  console.log('AuthProvider: Current state - loading:', loading, 'user:', user?.email, 'mounted:', mounted);
+  const contextValue: AuthContextType = {
+    user,
+    session,
+    loading,
+    isConfigured,
+    error,
+    signOut,
+    refreshSession,
+  };
 
-  // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading...</p>
-        </div>
-      </div>
+      <AuthContext.Provider value={{
+        user: null,
+        session: null,
+        loading: false,
+        isConfigured,
+        error: null,
+        signOut: async () => {},
+        refreshSession: async () => {},
+      }}>
+        {children}
+      </AuthContext.Provider>
     );
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
@@ -153,4 +228,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-} 
+}
