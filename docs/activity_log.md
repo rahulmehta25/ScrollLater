@@ -1,5 +1,31 @@
 # ScrollLater Frontend - Activity Log
 
+## 2026-04-18 EST
+
+### User Prompt
+"Start at the first incomplete item in DELTA.md's Delta items (ordered) section."
+
+### Actions Taken
+- Rewrote `README.md` using the DELTA.md draft: leads with the morning briefing, lists the real stack (Next.js 15, Supabase, pgvector, ElevenLabs agent, 11 Edge Functions, PWA), adds `docs/screenshots/` placeholders, links ARCHITECTURE_REVIEW.md and SECURITY_AUDIT.md. Adapted the draft's `pnpm` commands to `npm` to match the project's package-lock.json.
+- Created `~/Desktop/Projects/portfolio-upgrade/_logs/scrolllater.scope-requests.md` logging: deployment 404 at scrolllater.vercel.app (blocks DELTA items 2 and 4), the pnpm → npm adaptation, and why items 1 and 4-8 cannot be resolved autonomously.
+
+## 2026-03-23 15:41 EST
+
+### User Prompt
+"Write tests for src/lib/auth.ts"
+
+### Actions Taken
+- Created `src/__tests__/lib/auth.test.ts` with 51 tests covering `signUpWithEmail`, `signInWithEmail`, `signInWithMagicLink`, `signInWithOAuth`, `resetPassword`, `updatePassword`, `signOut`, `getSession`, `getUser`, `validateEmail`, and `validatePassword`
+- Extended the shared `mockSupabaseClient.auth` object with `signInWithOtp`, `resetPasswordForEmail`, and `updateUser` methods that were missing from the base mock
+
+## 2026-03-23 15:39 EST
+
+### User Prompt
+"Write tests for src/lib/errors.ts"
+
+### Actions Taken
+- Created `src/__tests__/lib/errors.test.ts` with 59 tests covering `ErrorCode`, `AppError`, `parsePostgrestError`, `parseError`, `isRetryable`, `withRetry`, `logError`, `errorToToast`, and `handleApiResponse`
+
 ## 2026-03-23 21:00 EST
 
 ### User Prompt
