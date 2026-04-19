@@ -93,11 +93,11 @@ async function main() {
   let jobInserted = 0;
   if (entryIds.length > 0) {
     const jobRes = await pool.query(
-      `INSERT INTO audio_jobs (entry_id, status)
-       VALUES ($1, 'queued')
+      `INSERT INTO audio_jobs (entry_id, user_id, status)
+       VALUES ($1, $2, 'queued')
        ON CONFLICT DO NOTHING
        RETURNING id`,
-      [entryIds[0]],
+      [entryIds[0], userId],
     );
     jobInserted = jobRes.rowCount ?? 0;
   }
