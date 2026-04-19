@@ -8,6 +8,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { PostHogProvider } from "@/components/analytics/PostHogProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -73,6 +74,7 @@ export default function RootLayout({
         <InstallPrompt />
         <Analytics />
         <SpeedInsights />
+        <PostHogProvider />
       </body>
     </html>
   );

@@ -17,6 +17,7 @@ import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from '@/compon
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/lib/utils';
+import { posthog } from '@/lib/posthog';
 
 interface MetadataPreview {
   title: string;
@@ -132,6 +133,14 @@ function QuickAddModal({ open, onClose, onSave }: QuickAddModalProps) {
     setIsSaving(true);
     await new Promise((r) => setTimeout(r, 600));
     onSave?.({ url, collection: selectedCollection || undefined, scheduledFor: scheduledFor || undefined });
+    const categorizationVariant =
+      posthog.getFeatureFlag?.('scrolllater-ai-categorization-v2') ?? 'v1';
+    posthog.capture?.('article_saved', {
+      url,
+      collection: selectedCollection || null,
+      scheduled: !!scheduledFor,
+      categorization_variant: categorizationVariant,
+    });
     setIsSaving(false);
     setShowSuccess(true);
     setTimeout(() => {
