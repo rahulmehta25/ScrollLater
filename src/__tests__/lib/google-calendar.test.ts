@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Use vi.hoisted so the factory references are resolved before module evaluation
 const mocks = vi.hoisted(() => {
