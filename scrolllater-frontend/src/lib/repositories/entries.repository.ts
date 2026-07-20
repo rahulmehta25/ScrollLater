@@ -1,5 +1,7 @@
 import { createSupabaseServer } from '@/lib/supabase-server'
 import type { Database } from '@/lib/database.types'
+import { queryOptimizer } from '@/lib/database/query-optimizer'
+import { cache, cacheKeys } from '@/lib/cache'
 import {
   EnhancedBaseRepository,
   RepositoryResult,
@@ -122,7 +124,7 @@ export class EntriesRepository implements EnhancedBaseRepository<Entry> {
   }
 
   /**
-   * Find entries with pagination
+   * Find entries with pagination and caching
    */
   async findWithPagination(
     filters: EntryFilters = {},
@@ -130,12 +132,56 @@ export class EntriesRepository implements EnhancedBaseRepository<Entry> {
   ): Promise<PaginatedResult<Entry>> {
     try {
       const { page, limit, sortBy = 'created_at', sortOrder = 'desc' } = pagination
-      const offset = (page - 1) * limit
+      
+      // Create cache key from filters and pagination
+      const cacheKey = cacheKeys.entries(
+        filters.userId || 'anonymous', 
+        page
+      ) + `_${JSON.stringify({ filters, sortBy, sortOrder, limit })}`
+      
+      // Use query optimizer with caching for non-search queries
+      if (!filters.search) {
+        const result = await queryOptimizer.executeWithCache(
+          async () => {
+            return await queryOptimizer.getOptimizedEntries({
+              userId: filters.userId!,
+              status: filters.status,
+              category: filters.category,
+              tags: filters.tags,
+              dateFrom: filters.dateFrom,
+              dateTo: filters.dateTo,
+              limit,
+              offset: (page - 1) * limit
+            })
+          },
+          cacheKey,
+          300000, // 5 minutes
+          {
+            queryId: 'find_entries_paginated',
+            userId: filters.userId,
+            description: `Paginated entries query: page=${page}, limit=${limit}`
+          }
+        )
 
-      // Build query
+        const total = result.data.count || 0
+        const totalPages = Math.ceil(total / limit)
+
+        return {
+          data: result.data.data || [],
+          total,
+          page,
+          limit,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1
+        }
+      }
+
+      // For search queries, don't cache as they're more dynamic
+      const offset = (page - 1) * limit
       let query = this.supabase.from('entries').select('*', { count: 'exact' })
 
-      // Apply filters (same as findAll)
+      // Apply filters
       if (filters.userId) query = query.eq('user_id', filters.userId)
       if (filters.status) query = query.eq('status', filters.status)
       if (filters.category) {
@@ -533,10 +579,45 @@ export class EntriesRepository implements EnhancedBaseRepository<Entry> {
   }
 
   /**
-   * Get statistics for entries
+   * Get statistics for entries with caching
    */
   async getStats(userId: string): Promise<EntryStats> {
     try {
+      // Use cache for stats as they don't change frequently
+      const cacheKey = cacheKeys.stats(userId)
+      
+      const cachedStats = await cache.get<EntryStats>(cacheKey)
+      if (cachedStats) {
+        return cachedStats
+      }
+
+      // Use optimized database function for better performance
+      const result = await queryOptimizer.executeWithMonitoring(
+        async () => {
+          return await queryOptimizer.getUserStats(userId)
+        },
+        {
+          queryId: 'get_user_stats',
+          userId,
+          description: 'Get user entry statistics'
+        }
+      )
+
+      if (result.data) {
+        const stats: EntryStats = {
+          total: result.data.total_entries || 0,
+          byStatus: result.data.by_status || {},
+          byCategory: result.data.by_category || {},
+          avgReadTime: result.data.avg_read_time || 0,
+          totalReadTime: result.data.total_read_time || 0
+        }
+
+        // Cache for 10 minutes
+        await cache.set(cacheKey, stats, 600)
+        return stats
+      }
+
+      // Fallback to original method if database function fails
       const { data, error } = await this.supabase
         .from('entries')
         .select('status, ai_category, user_category, estimated_read_time')
@@ -567,13 +648,17 @@ export class EntriesRepository implements EnhancedBaseRepository<Entry> {
         totalReadTime += entry.estimated_read_time || 0
       })
 
-      return {
+      const stats: EntryStats = {
         total: entries.length,
         byStatus,
         byCategory,
         avgReadTime: entries.length > 0 ? totalReadTime / entries.length : 0,
         totalReadTime
       }
+
+      // Cache for 10 minutes
+      await cache.set(cacheKey, stats, 600)
+      return stats
     } catch (error) {
       if (error instanceof RepositoryError) throw error
       throw new RepositoryError(

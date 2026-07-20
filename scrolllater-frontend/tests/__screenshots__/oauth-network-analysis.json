@@ -1,0 +1,156 @@
+{
+  "requests": [
+    {
+      "url": "http://localhost:3000/",
+      "status": 0
+    },
+    {
+      "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1755706861425",
+      "status": 0
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/webpack.js?v=1755706861425",
+      "status": 0
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/75d3bb57.js?v=1755706861425",
+      "status": 0
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/commons.js?v=1755706861425",
+      "status": 0
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1755706861425",
+      "status": 0
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/vendors-_app-pages-browser_node_modules_next_dist_client_components_client-page_js-_app-pages-a7ff94.js",
+      "status": 0
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+      "status": 0
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/vendors-_app-pages-browser_node_modules_next_font_google_target_css_path_src_app_layout_tsx_i-27bc41.js",
+      "status": 0
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+      "status": 0
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+      "status": 0
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap",
+      "status": 0
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/inter/v19/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2",
+      "status": 0
+    },
+    {
+      "url": "http://localhost:3000/api/csp-report",
+      "status": 0
+    },
+    {
+      "url": "https://va.vercel-scripts.com/v1/script.debug.js",
+      "status": 0
+    },
+    {
+      "url": "http://localhost:3000/api/csp-report",
+      "status": 0
+    },
+    {
+      "url": "https://va.vercel-scripts.com/v1/speed-insights/script.debug.js",
+      "status": 0
+    },
+    {
+      "url": "https://emvuhkatpbayvhpvnwxm.supabase.co/auth/v1/authorize?provider=google&redirect_to=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fauth%2Fcallback&code_challenge=K0z0hvgZyWMnNtkGJd69YQ91xn3FjOvFiAUdcxoiUJ0&code_challenge_method=s256",
+      "status": 0
+    },
+    {
+      "url": "https://accounts.google.com/o/oauth2/v2/auth?client_id=805123919791-78b1e01ocbofqtkiaku1poj5uuuih65f.apps.googleusercontent.com&redirect_to=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fauth%2Fcallback&redirect_uri=https%3A%2F%2Femvuhkatpbayvhpvnwxm.supabase.co%2Fauth%2Fv1%2Fcallback&response_type=code&scope=email+profile&state=eyJhbGciOiJIUzI1NiIsImtpZCI6Ik5id0ExaytaTmFtbEpvOCsiLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3NTU3MDcxNjIsInNpdGVfdXJsIjoiaHR0cHM6Ly9zY3JvbGwtbGF0ZXIudmVyY2VsLmFwcCIsImlkIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAwIiwiZnVuY3Rpb25faG9va3MiOm51bGwsInByb3ZpZGVyIjoiZ29vZ2xlIiwicmVmZXJyZXIiOiJodHRwczovL3Njcm9sbC1sYXRlci52ZXJjZWwuYXBwIiwiZmxvd19zdGF0ZV9pZCI6IjVjMzk4ZTkxLWM2ZjEtNGNmOC1iZjFiLWJmYWVhYzU0NzgxMiJ9.aj_2GrQXbK7I4MiABuXgmSLbnxmHR6hUG8YTM82s0KY",
+      "status": 0
+    }
+  ],
+  "responses": [
+    {
+      "url": "http://localhost:3000/",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1755706861425",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/webpack.js?v=1755706861425",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+      "status": 200
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/vendors-_app-pages-browser_node_modules_next_dist_client_components_client-page_js-_app-pages-a7ff94.js",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/vendors-_app-pages-browser_node_modules_next_font_google_target_css_path_src_app_layout_tsx_i-27bc41.js",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+      "status": 200
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/inter/v19/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/commons.js?v=1755706861425",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/75d3bb57.js?v=1755706861425",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1755706861425",
+      "status": 200
+    },
+    {
+      "url": "https://emvuhkatpbayvhpvnwxm.supabase.co/auth/v1/authorize?provider=google&redirect_to=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fauth%2Fcallback&code_challenge=K0z0hvgZyWMnNtkGJd69YQ91xn3FjOvFiAUdcxoiUJ0&code_challenge_method=s256",
+      "status": 302
+    },
+    {
+      "url": "http://localhost:3000/api/csp-report",
+      "status": 404
+    },
+    {
+      "url": "http://localhost:3000/api/csp-report",
+      "status": 404
+    }
+  ],
+  "failedRequests": [
+    {
+      "url": "http://localhost:3000/api/csp-report",
+      "status": 404
+    },
+    {
+      "url": "http://localhost:3000/api/csp-report",
+      "status": 404
+    }
+  ]
+}

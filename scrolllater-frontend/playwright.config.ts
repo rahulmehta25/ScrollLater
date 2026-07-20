@@ -10,8 +10,9 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    screenshot: 'always',
     video: 'retain-on-failure',
+    ignoreHTTPSErrors: true,
   },
   projects: [
     {
@@ -44,3 +45,5 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
   },
 });
+
+

@@ -13,6 +13,7 @@ export class SecurityHeaders {
     'script-src': [
       "'self'",
       "'unsafe-inline'", // Required for Next.js, should be replaced with nonce
+      "'unsafe-eval'", // Required for Next.js development mode
       'https://cdn.jsdelivr.net',
       'https://www.googletagmanager.com',
       'https://www.google-analytics.com'

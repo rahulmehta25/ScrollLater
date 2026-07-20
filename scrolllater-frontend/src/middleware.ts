@@ -18,13 +18,18 @@ export async function middleware(request: NextRequest) {
     // CORS handling for API routes
     const origin = request.headers.get('origin')
     const allowedOrigins = [
-      process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+      process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001',
+      'https://scroll-later.vercel.app',
+      'https://scrolllater-frontend.vercel.app',
       'https://scrolllater.app',
-      'https://www.scrolllater.app'
+      'https://www.scrolllater.app',
+      'http://localhost:3000',
+      'http://localhost:3001'
     ]
 
-    if (origin && allowedOrigins.includes(origin)) {
-      response.headers.set('Access-Control-Allow-Origin', origin)
+    // Allow OAuth callbacks from Supabase and Google
+    if (pathname.startsWith('/api/auth/') || !origin || allowedOrigins.includes(origin)) {
+      response.headers.set('Access-Control-Allow-Origin', origin || '*')
       response.headers.set('Access-Control-Allow-Credentials', 'true')
     }
 

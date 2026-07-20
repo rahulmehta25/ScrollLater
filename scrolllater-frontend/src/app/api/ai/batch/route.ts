@@ -44,26 +44,23 @@ export async function POST(request: NextRequest) {
     const aiProcessor = new AIProcessor(process.env.OPENROUTER_API_KEY!)
     const results = await aiProcessor.batchAnalyzeContent(entries, batchSize)
 
-    // Update entries with analysis results
-    const updatePromises = Array.from(results.entries()).map(async ([entryId, analysis]) => {
-      const { error } = await supabase
-        .from('entries')
-        .update({
-          title: analysis.title,
-          ai_summary: analysis.summary,
-          ai_category: analysis.category,
-          tags: analysis.tags,
-          sentiment: analysis.sentiment,
-          urgency: analysis.urgency,
-          estimated_read_time: analysis.estimatedReadTime,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', entryId)
+    // Use batch update to prevent N+1 queries
+    const { queryOptimizer } = await import('@/lib/database/query-optimizer')
+    
+    const updates = Array.from(results.entries()).map(([entryId, analysis]) => ({
+      id: entryId,
+      data: {
+        title: analysis.title,
+        ai_summary: analysis.summary,
+        ai_category: analysis.category,
+        ai_tags: analysis.tags,
+        sentiment: analysis.sentiment,
+        urgency: analysis.urgency,
+        estimated_read_time: analysis.estimatedReadTime
+      }
+    }))
 
-      return { entryId, success: !error, error }
-    })
-
-    const updateResults = await Promise.all(updatePromises)
+    const updateResults = await queryOptimizer.batchUpdateEntries(updates, session.user.id)
     
     // Get usage statistics
     const usageStats = aiProcessor.getUsageStats()

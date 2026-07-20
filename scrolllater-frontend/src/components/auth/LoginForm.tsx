@@ -13,17 +13,37 @@ export default function LoginForm() {
     setError(null)
     
     try {
+      // Determine the correct redirect URL based on environment
+      const isLocal = typeof window !== 'undefined' && 
+        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      
+      const redirectUrl = isLocal 
+        ? window.location.origin  // Use current origin for local development
+        : process.env.NEXT_PUBLIC_APP_URL || 'https://scroll-later.vercel.app'  // Use env var for production
+      
+      console.log('OAuth redirect setup:', {
+        isLocal,
+        windowOrigin: typeof window !== 'undefined' ? window.location.origin : null,
+        envUrl: process.env.NEXT_PUBLIC_APP_URL,
+        finalRedirectUrl: redirectUrl,
+        provider,
+        callbackUrl: `${redirectUrl}/api/auth/callback/${provider}`
+      })
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`,
+          redirectTo: `${redirectUrl}/api/auth/callback/${provider}`,
         },
       })
       
-      if (error) throw error
-    } catch (err) {
+      if (error) {
+        console.error('OAuth initiation error:', error)
+        throw error
+      }
+    } catch (err: any) {
       console.error('Error signing in:', err)
-      setError('Failed to sign in. Please try again.')
+      setError(err?.message || 'Failed to sign in. Please try again.')
     } finally {
       setLoading(false)
     }

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback, memo } from 'react'
 import { format, formatDistanceToNow, addDays, formatISO } from 'date-fns'
+import { motion, AnimatePresence } from 'framer-motion'
 import { 
   CalendarIcon, 
   LinkIcon, 
@@ -9,14 +10,21 @@ import {
   CheckIcon,
   ArchiveBoxIcon,
   TrashIcon,
-  SparklesIcon
+  SparklesIcon,
+  EyeIcon,
+  TagIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline'
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
+import { clsx } from 'clsx'
 import type { Database } from '../../lib/supabase'
 import { createSupabaseClient } from '@/lib/supabase'
 import { AIAnalysisDisplay } from '@/components/ai/AIAnalysisDisplay'
 import { AIAnalyzeButton } from '@/components/ai/AIAnalyzeButton'
+import { Button } from '@/components/ui/Button'
+import { Modal, ConfirmDialog, useConfirmDialog } from '@/components/ui/Modal'
+import { useToastHelpers } from '@/components/ui/Toast'
 
 type Entry = Database['public']['Tables']['entries']['Row']
 

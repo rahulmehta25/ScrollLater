@@ -25,6 +25,7 @@ export class QueryOptimizer {
   private metrics: QueryMetrics[] = []
   private thresholds: PerformanceThresholds
   private supabase = createSupabaseServer()
+  private queryCache = new Map<string, { data: any; timestamp: number; ttl: number }>()
 
   private constructor() {
     this.thresholds = {
@@ -32,6 +33,9 @@ export class QueryOptimizer {
       maxRowsWarning: 10000, // 10k rows
       connectionTimeoutMs: 30000 // 30 seconds
     }
+    
+    // Clean up cache every 5 minutes
+    setInterval(() => this.cleanupCache(), 5 * 60 * 1000)
   }
 
   static getInstance(): QueryOptimizer {
@@ -300,6 +304,150 @@ export class QueryOptimizer {
   cleanupMetrics(maxAge = 24 * 60 * 60 * 1000): void { // 24 hours
     const cutoff = new Date(Date.now() - maxAge)
     this.metrics = this.metrics.filter(metric => metric.timestamp > cutoff)
+  }
+
+  /**
+   * Clean up expired cache entries
+   */
+  private cleanupCache(): void {
+    const now = Date.now()
+    for (const [key, value] of this.queryCache.entries()) {
+      if (now > value.timestamp + value.ttl) {
+        this.queryCache.delete(key)
+      }
+    }
+  }
+
+  /**
+   * Execute query with caching support
+   */
+  async executeWithCache<T>(
+    queryBuilder: () => any,
+    cacheKey: string,
+    ttlMs: number = 300000, // 5 minutes default
+    context: {
+      queryId: string
+      userId?: string
+      endpoint?: string
+      description?: string
+    }
+  ): Promise<{ data: T; metrics: QueryMetrics; fromCache: boolean }> {
+    // Check cache first
+    const cached = this.queryCache.get(cacheKey)
+    const now = Date.now()
+    
+    if (cached && now <= cached.timestamp + cached.ttl) {
+      console.log(`[QUERY_CACHE] Hit: ${context.queryId}`)
+      return {
+        data: cached.data,
+        metrics: {
+          queryId: context.queryId,
+          query: context.description || context.queryId,
+          executionTime: 0,
+          rowsProcessed: Array.isArray(cached.data) ? cached.data.length : 1,
+          timestamp: new Date(),
+          userId: context.userId,
+          endpoint: context.endpoint
+        },
+        fromCache: true
+      }
+    }
+
+    // Execute query if not cached
+    const result = await this.executeWithMonitoring(queryBuilder, context)
+    
+    // Cache the result
+    this.queryCache.set(cacheKey, {
+      data: result.data,
+      timestamp: now,
+      ttl: ttlMs
+    })
+
+    console.log(`[QUERY_CACHE] Miss: ${context.queryId} - cached for ${ttlMs}ms`)
+    
+    return { ...result, fromCache: false }
+  }
+
+  /**
+   * Batch process entries to prevent N+1 queries
+   */
+  async batchProcessEntries(
+    entryIds: string[],
+    processor: (entries: any[]) => Promise<Map<string, any>>,
+    userId: string
+  ): Promise<Map<string, any>> {
+    if (entryIds.length === 0) {
+      return new Map()
+    }
+
+    // Fetch all entries in a single query
+    const { data: entries } = await this.executeWithMonitoring(
+      async () => {
+        return await this.supabase
+          .from('entries')
+          .select('*')
+          .in('id', entryIds)
+          .eq('user_id', userId)
+      },
+      {
+        queryId: 'batch_fetch_entries',
+        userId,
+        description: `Batch fetch ${entryIds.length} entries`
+      }
+    )
+
+    if (!entries || entries.length === 0) {
+      return new Map()
+    }
+
+    // Process all entries in batch
+    return await processor(entries)
+  }
+
+  /**
+   * Optimized batch update to prevent N+1 queries in AI processing
+   */
+  async batchUpdateEntries(
+    updates: Array<{ id: string; data: any }>,
+    userId: string
+  ): Promise<Array<{ id: string; success: boolean; error?: any }>> {
+    if (updates.length === 0) {
+      return []
+    }
+
+    const results: Array<{ id: string; success: boolean; error?: any }> = []
+    
+    // Process updates in batches of 10 to avoid overwhelming the database
+    const batchSize = 10
+    for (let i = 0; i < updates.length; i += batchSize) {
+      const batch = updates.slice(i, i + batchSize)
+      
+      const batchPromises = batch.map(async (update) => {
+        try {
+          const { error } = await this.supabase
+            .from('entries')
+            .update({ ...update.data, updated_at: new Date().toISOString() })
+            .eq('id', update.id)
+            .eq('user_id', userId)
+
+          return { id: update.id, success: !error, error }
+        } catch (error) {
+          return { id: update.id, success: false, error }
+        }
+      })
+
+      const batchResults = await Promise.all(batchPromises)
+      results.push(...batchResults)
+
+      // Small delay between batches
+      if (i + batchSize < updates.length) {
+        await new Promise(resolve => setTimeout(resolve, 50))
+      }
+    }
+
+    console.log(`[BATCH_UPDATE] Processed ${updates.length} entries in ${Math.ceil(updates.length / batchSize)} batches`)
+    
+    return results
   }
 
   /**

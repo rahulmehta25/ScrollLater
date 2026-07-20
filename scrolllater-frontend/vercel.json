@@ -15,6 +15,10 @@
     "src/app/api/ai/queue/stats/route.ts": {
       "maxDuration": 5,
       "runtime": "edge"
+    },
+    "src/app/api/auth/callback/route.ts": {
+      "maxDuration": 10,
+      "runtime": "nodejs20.x"
     }
   },
   "crons": [
