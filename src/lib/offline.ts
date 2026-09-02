@@ -177,6 +177,7 @@ export async function syncOfflineQueue(): Promise<SyncResult> {
   if (queue.length === 0) return result
 
   const supabase = createSupabaseClient()
+  const completedIds = new Set<string>()
 
   for (const action of queue) {
     try {
@@ -214,6 +215,7 @@ export async function syncOfflineQueue(): Promise<SyncResult> {
 
       if (success) {
         result.synced++
+        completedIds.add(action.id)
       } else {
         action.retries++
         if (action.retries >= 3) {
@@ -229,9 +231,11 @@ export async function syncOfflineQueue(): Promise<SyncResult> {
     }
   }
 
-  // Save the modified queue, filtering out actions that exceeded max retries
-  const remainingQueue = queue.filter(a => (a.retries || 0) < 3);
-  saveOfflineQueue(remainingQueue);
+  // Drop synced actions and any that exceeded max retries
+  const remainingQueue = queue.filter(
+    (a) => !completedIds.has(a.id) && (a.retries || 0) < 3
+  )
+  saveOfflineQueue(remainingQueue)
 
   result.success = result.failed === 0
   return result

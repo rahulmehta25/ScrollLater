@@ -192,11 +192,13 @@ describe('subscribeToPush', () => {
   })
 
   it('returns null when serviceWorker.ready rejects', async () => {
-    setServiceWorker({ ready: Promise.reject(new Error('SW not available')).catch(() => { throw new Error('SW not available') }) })
+    const ready = Promise.reject(new Error('SW not available'))
+    // Prevent unhandled rejection if subscribeToPush short-circuits on empty VAPID
+    ready.catch(() => {})
+    setServiceWorker({ ready })
     setPushManager(class PushManager {})
     setNotification(makeNotificationClass())
 
-    // We need to ensure the rejection is caught inside subscribeToPush.
     // The module-level VAPID key is '', so it short-circuits before hitting SW.
     const result = await subscribeToPush()
     expect(result).toBeNull()
