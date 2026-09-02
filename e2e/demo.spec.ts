@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Demo Features', () => {
   test('home page loads demo content', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/library')
 
     await page.waitForLoadState('networkidle')
 
@@ -12,7 +12,7 @@ test.describe('Demo Features', () => {
   })
 
   test('can interact with demo items', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/library')
 
     await page.waitForLoadState('networkidle')
 
@@ -25,7 +25,7 @@ test.describe('Demo Features', () => {
   })
 
   test('demo navigation works', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/library')
 
     await page.waitForLoadState('networkidle')
 
@@ -38,7 +38,7 @@ test.describe('Demo Features', () => {
   })
 
   test('demo cards display correctly', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/library')
 
     await page.waitForLoadState('networkidle')
 
@@ -51,7 +51,7 @@ test.describe('Demo Features', () => {
   })
 
   test('demo content has proper structure', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/library')
 
     await page.waitForLoadState('networkidle')
 
@@ -64,7 +64,7 @@ test.describe('Demo Features', () => {
   })
 
   test('page is accessible', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/library')
 
     await page.waitForLoadState('networkidle')
 
@@ -77,7 +77,7 @@ test.describe('Demo Features', () => {
 
 test.describe('Content Queue Flow', () => {
   test('queue elements are visible on home page', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/library')
 
     await page.waitForLoadState('networkidle')
 
@@ -92,7 +92,7 @@ test.describe('Content Queue Flow', () => {
   })
 
   test('can view content items', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/library')
 
     await page.waitForLoadState('networkidle')
 

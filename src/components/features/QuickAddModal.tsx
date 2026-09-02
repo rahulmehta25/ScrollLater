@@ -5,8 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Link as LinkIcon,
   Calendar,
-  Tag,
-  Sparkles,
   Loader2,
   Globe,
   FileText,
@@ -35,12 +33,12 @@ interface QuickAddModalProps {
 }
 
 const collections = [
-  { id: 'tech', name: 'Tech', color: '#3B82F6' },
-  { id: 'ai', name: 'AI & ML', color: '#8B5CF6' },
-  { id: 'finance', name: 'Finance', color: '#10B981' },
-  { id: 'design', name: 'Design', color: '#EC4899' },
-  { id: 'science', name: 'Science', color: '#06B6D4' },
-  { id: 'productivity', name: 'Productivity', color: '#F59E0B' },
+  { id: 'tech', name: 'Tech' },
+  { id: 'ai', name: 'AI & ML' },
+  { id: 'finance', name: 'Finance' },
+  { id: 'design', name: 'Design' },
+  { id: 'science', name: 'Science' },
+  { id: 'productivity', name: 'Productivity' },
 ];
 
 function QuickAddModal({ open, onClose, onSave }: QuickAddModalProps) {
@@ -162,21 +160,17 @@ function QuickAddModal({ open, onClose, onSave }: QuickAddModalProps) {
         {showSuccess ? (
           <motion.div
             key="success"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
             className="py-12 px-6 flex flex-col items-center text-center"
           >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', bounce: 0.5, delay: 0.1 }}
-              className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mb-4"
-            >
-              <CheckCircle className="w-7 h-7 text-green-600" />
-            </motion.div>
-            <h3 className="text-base font-semibold text-gray-900 mb-1 tracking-tight">Saved</h3>
-            <p className="text-sm text-gray-500">Added to your reading list. Find it at the top of your library.</p>
+            <div className="w-12 h-12 bg-paper-muted rounded-full flex items-center justify-center mb-4 text-ink">
+              <CheckCircle className="w-6 h-6" />
+            </div>
+            <h3 className="font-serif text-xl tracking-display text-ink mb-1">Saved</h3>
+            <p className="text-sm text-ink-muted">Added to your reading list. Find it at the top of your library.</p>
           </motion.div>
         ) : (
           <motion.div
@@ -184,14 +178,15 @@ function QuickAddModal({ open, onClose, onSave }: QuickAddModalProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
           >
             <ModalHeader>
               <ModalTitle>Save Link</ModalTitle>
             </ModalHeader>
 
-            <ModalBody className="space-y-4">
+            <ModalBody className="space-y-5">
               <Input
-                placeholder="Paste URL or type to search..."
+                placeholder="Paste a URL..."
                 value={url}
                 onChange={(e) => handleUrlChange(e.target.value)}
                 icon={<LinkIcon className="w-4 h-4" />}
@@ -199,81 +194,58 @@ function QuickAddModal({ open, onClose, onSave }: QuickAddModalProps) {
               />
 
               {isLoading && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg"
-                >
-                  <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
-                  <span className="text-sm text-gray-500">Fetching metadata...</span>
-                </motion.div>
+                <div className="flex items-center gap-3 py-3 text-ink-subtle">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">Fetching metadata...</span>
+                </div>
               )}
 
               {metadata && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-4 bg-gray-50 border border-gray-200 rounded-lg"
-                >
+                <div className="py-4 border-y border-paper-deep">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-white border border-gray-200 rounded-lg flex items-center justify-center text-gray-400 flex-shrink-0">
+                    <div className="w-9 h-9 bg-paper-muted rounded-md flex items-center justify-center text-ink-subtle flex-shrink-0">
                       {typeIcons[metadata.type]}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">
-                          {metadata.siteName}
-                        </span>
+                      <div className="flex items-center gap-2 mb-1 text-[11px] text-ink-faint uppercase tracking-[0.12em]">
+                        <span>{metadata.siteName}</span>
                         {metadata.readTime && (
                           <>
-                            <span className="text-gray-300">|</span>
-                            <span className="text-[10px] text-gray-400">
-                              {metadata.readTime} min read
-                            </span>
+                            <span>/</span>
+                            <span>{metadata.readTime} min</span>
                           </>
                         )}
                       </div>
-                      <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
+                      <h4 className="font-serif text-lg tracking-display text-ink line-clamp-2">
                         {metadata.title}
                       </h4>
-                      <p className="text-xs text-gray-500 line-clamp-2 mt-1">
+                      <p className="text-sm text-ink-muted line-clamp-2 mt-1">
                         {metadata.description}
                       </p>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200">
-                    <Sparkles className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-xs text-gray-500">
-                      AI will analyze and categorize this content
-                    </span>
-                  </div>
-                </motion.div>
+                </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Tag className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />
-                  Collection (optional)
+                <label className="block text-xs uppercase tracking-[0.14em] text-ink-subtle mb-3">
+                  Collection
                 </label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-x-4 gap-y-2">
                   {collections.map((col) => (
                     <button
                       key={col.id}
+                      type="button"
                       onClick={() =>
                         setSelectedCollection(selectedCollection === col.id ? null : col.id)
                       }
                       className={cn(
-                        'px-3 py-1.5 text-xs font-medium rounded-full border transition-colors',
+                        'text-sm transition-colors duration-craft',
                         selectedCollection === col.id
-                          ? 'border-gray-900 bg-gray-900 text-white'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          ? 'text-ink font-medium underline decoration-ink underline-offset-[0.18em]'
+                          : 'text-ink-muted hover:text-ink'
                       )}
                     >
-                      <span
-                        className="inline-block w-2 h-2 rounded-full mr-1.5"
-                        style={{ backgroundColor: col.color }}
-                      />
                       {col.name}
                     </button>
                   ))}
@@ -281,20 +253,21 @@ function QuickAddModal({ open, onClose, onSave }: QuickAddModalProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Calendar className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />
-                  Schedule (optional)
+                <label className="block text-xs uppercase tracking-[0.14em] text-ink-subtle mb-3">
+                  <Calendar className="w-3 h-3 inline-block mr-1.5 -mt-0.5" />
+                  Schedule
                 </label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-x-4 gap-y-2">
                   {['Today', 'Tomorrow', 'This Weekend', 'Next Week'].map((time) => (
                     <button
                       key={time}
+                      type="button"
                       onClick={() => setScheduledFor(scheduledFor === time ? null : time)}
                       className={cn(
-                        'px-3 py-1.5 text-xs font-medium rounded-full border transition-colors',
+                        'text-sm transition-colors duration-craft',
                         scheduledFor === time
-                          ? 'border-gray-900 bg-gray-900 text-white'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          ? 'text-ink font-medium underline decoration-ink underline-offset-[0.18em]'
+                          : 'text-ink-muted hover:text-ink'
                       )}
                     >
                       {time}
@@ -304,11 +277,23 @@ function QuickAddModal({ open, onClose, onSave }: QuickAddModalProps) {
               </div>
             </ModalBody>
 
-            <ModalFooter>
-              <Button variant="ghost" onClick={onClose}>
+            <ModalFooter className="justify-between sm:justify-between">
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-sm text-ink underline decoration-ink/40 underline-offset-[0.18em] transition-colors duration-craft hover:decoration-ink"
+              >
                 Cancel
-              </Button>
-              <Button onClick={handleSave} loading={isSaving} disabled={!url}>
+              </button>
+              <Button
+                onClick={handleSave}
+                loading={isSaving}
+                disabled={!url}
+                className={cn(
+                  'rounded-full px-5 min-w-[7.5rem]',
+                  !url && 'border border-paper-deep bg-paper-muted text-ink-subtle'
+                )}
+              >
                 Save Link
               </Button>
             </ModalFooter>

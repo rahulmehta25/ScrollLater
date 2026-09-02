@@ -4,30 +4,24 @@ test.describe('Home Page', () => {
   test('loads the home page', async ({ page }) => {
     await page.goto('/')
 
-    // Check page loads
     await expect(page).toHaveTitle(/ScrollLater/)
   })
 
   test('displays main content', async ({ page }) => {
     await page.goto('/')
 
-    // Wait for page to load
     await page.waitForLoadState('networkidle')
 
-    // Check for main elements
-    const body = page.locator('body')
-    await expect(body).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await expect(page.getByText('quiet reading room', { exact: false })).toBeVisible()
   })
 
   test('has working navigation', async ({ page }) => {
     await page.goto('/')
 
-    // Check page responds to interactions
     await page.waitForLoadState('domcontentloaded')
 
-    // Verify the page structure
-    const main = page.locator('body')
-    await expect(main).toBeVisible()
+    await expect(page.getByRole('link', { name: /Open library|Explore the demo library/i }).first()).toBeVisible()
   })
 
   test('is mobile responsive', async ({ page }) => {
@@ -36,7 +30,6 @@ test.describe('Home Page', () => {
 
     await page.waitForLoadState('networkidle')
 
-    // Page should still be accessible
     const body = page.locator('body')
     await expect(body).toBeVisible()
   })

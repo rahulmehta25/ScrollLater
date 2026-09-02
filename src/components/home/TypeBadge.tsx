@@ -22,10 +22,10 @@ export function TypeLabel({ type }: { type: ContentType }) {
     reddit: 'Reddit',
   };
   const colors: Record<ContentType, string> = {
-    article: 'bg-gray-100 text-gray-600',
-    video: 'bg-red-50 text-red-600',
-    tweet: 'bg-sky-50 text-sky-600',
-    reddit: 'bg-orange-50 text-orange-600',
+    article: 'bg-paper-muted text-ink-muted',
+    video: 'bg-paper-muted text-ink-muted',
+    tweet: 'bg-paper-muted text-ink-muted',
+    reddit: 'bg-paper-muted text-ink-muted',
   };
   return (
     <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide', colors[type])}>

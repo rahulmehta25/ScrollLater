@@ -30,30 +30,34 @@ function EmptyState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center py-16 px-6 text-center animate-fade-in-scale',
+        'flex flex-col items-start sm:items-center justify-center py-14 px-2 text-left sm:text-center animate-fade-in-scale',
         className
       )}
     >
       {icon && (
-        <div className="w-14 h-14 rounded-2xl bg-gray-100 border border-gray-200/80 flex items-center justify-center text-gray-400 mb-5 shadow-sm">
+        <div className="mb-5 text-ink-subtle">
           {icon}
         </div>
       )}
-      <h3 className="text-base font-semibold text-gray-900 tracking-tight mb-1.5">{title}</h3>
+      <h3 className="font-serif text-2xl tracking-display text-ink mb-2">{title}</h3>
       {description && (
-        <p className="text-sm text-gray-500 max-w-sm leading-relaxed mb-5">{description}</p>
+        <p className="text-sm text-ink-muted max-w-md leading-relaxed mb-6">{description}</p>
       )}
       {(action || secondaryAction) && (
-        <div className="flex flex-wrap items-center justify-center gap-2.5">
+        <div className="flex flex-wrap items-center sm:justify-center gap-4">
           {action && (
-            <Button size="sm" onClick={action.onClick}>
+            <Button size="sm" className="rounded-full" onClick={action.onClick}>
               {action.label}
             </Button>
           )}
           {secondaryAction && (
-            <Button variant="ghost" size="sm" onClick={secondaryAction.onClick}>
+            <button
+              type="button"
+              onClick={secondaryAction.onClick}
+              className="link-underline text-sm"
+            >
               {secondaryAction.label}
-            </Button>
+            </button>
           )}
         </div>
       )}
