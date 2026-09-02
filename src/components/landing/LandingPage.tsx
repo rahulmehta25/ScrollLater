@@ -61,16 +61,16 @@ function Connector({ children }: { children: React.ReactNode }) {
 export function LandingPage() {
   return (
     <div className="min-h-screen bg-paper text-ink">
-      <header className="sticky top-0 z-30 border-b border-paper-deep bg-paper">
+      <header className="site-header">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
-          <Link href="/" className="flex items-center gap-2.5">
+          <Link href="/" className="relative z-10 flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-ink text-paper">
               <BookOpen className="h-4 w-4" strokeWidth={2.25} />
             </div>
             <span className="font-serif text-xl tracking-display text-ink">ScrollLater</span>
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm text-ink-muted sm:flex">
+          <nav className="relative z-10 hidden items-center gap-8 text-sm text-ink-muted sm:flex">
             <a href="#how" className="link-underline decoration-transparent hover:decoration-ink">
               How it works
             </a>
@@ -82,7 +82,7 @@ export function LandingPage() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-5">
+          <div className="relative z-10 flex items-center gap-5">
             <Link href="/login" className="link-underline text-sm">
               Sign in
             </Link>
@@ -97,15 +97,14 @@ export function LandingPage() {
       </header>
 
       <main>
-        {/* Hero band */}
         <section className="band band-paper">
-          <div className="mx-auto max-w-6xl px-5 pb-20 pt-20 sm:px-8 sm:pb-28 sm:pt-28">
+          <div className="mx-auto max-w-6xl px-5 pb-12 pt-16 sm:px-8 sm:pb-16 sm:pt-20">
             <motion.p
               custom={0}
               variants={fadeRise}
               initial="hidden"
               animate="visible"
-              className="mb-6 max-w-xl text-sm uppercase tracking-[0.16em] text-ink-subtle"
+              className="mb-5 max-w-xl text-sm uppercase tracking-[0.16em] text-ink-subtle"
             >
               Quiet reading room
             </motion.p>
@@ -126,7 +125,7 @@ export function LandingPage() {
               variants={fadeRise}
               initial="hidden"
               animate="visible"
-              className="mt-8 max-w-2xl font-sans text-lg leading-relaxed text-ink-muted sm:text-xl"
+              className="mt-6 max-w-2xl font-sans text-lg leading-relaxed text-ink-muted sm:text-xl"
             >
               ScrollLater is a calm library for the internet. Save what matters, set time
               aside, and finish ideas instead of losing them to the pile.
@@ -137,12 +136,9 @@ export function LandingPage() {
               variants={fadeRise}
               initial="hidden"
               animate="visible"
-              className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8"
+              className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8"
             >
-              <Link
-                href="/library"
-                className="inline-flex items-center justify-center rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-paper transition-opacity duration-craft hover:opacity-90"
-              >
+              <Link href="/library" className="btn-primary">
                 Explore the demo library
               </Link>
               <Link href="/signup" className="link-underline text-sm font-medium">
@@ -154,9 +150,8 @@ export function LandingPage() {
 
         <Connector>First, make a little room.</Connector>
 
-        {/* Preview band: full-width, not boxed cards */}
         <section className="band band-warm">
-          <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:px-8 sm:py-24 md:grid-cols-2 md:gap-16">
+          <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:px-8 sm:py-20 md:grid-cols-2 md:gap-16">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-ink-subtle">In the library</p>
               <ul className="mt-8 divide-y divide-paper-deep/80">
@@ -197,15 +192,14 @@ export function LandingPage() {
 
         <Connector>Then give reading a place to land.</Connector>
 
-        {/* How it works: band with numbered rows, not cards */}
         <section id="how" className="band band-paper">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
             <p className="text-xs uppercase tracking-[0.16em] text-ink-subtle">How it works</p>
             <h2 className="mt-4 max-w-3xl font-serif text-3xl tracking-display text-ink sm:text-4xl md:text-5xl">
               Three gentle steps from save to done.
             </h2>
 
-            <div className="mt-14 divide-y divide-paper-deep">
+            <div className="mt-12 divide-y divide-paper-deep">
               {steps.map((step, i) => (
                 <motion.div
                   key={step.n}
@@ -231,15 +225,14 @@ export function LandingPage() {
 
         <Connector>Built for attention, not for feeds.</Connector>
 
-        {/* Features band */}
         <section id="features" className="band band-warm">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
             <p className="text-xs uppercase tracking-[0.16em] text-ink-subtle">Why ScrollLater</p>
             <h2 className="mt-4 max-w-3xl font-serif text-3xl tracking-display text-ink sm:text-4xl md:text-5xl">
               Made like a reading product, not a dashboard.
             </h2>
 
-            <div className="mt-14 grid gap-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
+            <div className="mt-12 grid gap-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
               {features.map((feature, i) => (
                 <motion.article
                   key={feature.title}
@@ -259,20 +252,16 @@ export function LandingPage() {
 
         <Connector>When you are ready, begin.</Connector>
 
-        {/* Closing band */}
         <section className="band band-ink">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
             <h2 className="max-w-3xl font-serif text-3xl tracking-display text-paper sm:text-4xl md:text-5xl">
               Make room for the ideas you already care about.
             </h2>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-paper/70 sm:text-lg">
               Start with the interactive demo, or create an account and build your own quiet library.
             </p>
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8">
-              <Link
-                href="/library"
-                className="inline-flex items-center justify-center rounded-full bg-paper px-6 py-3.5 text-sm font-semibold text-ink transition-opacity duration-craft hover:opacity-90"
-              >
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8">
+              <Link href="/library" className="btn-primary-inverse">
                 Try the library
               </Link>
               <Link

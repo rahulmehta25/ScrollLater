@@ -23,39 +23,39 @@ export interface Collection {
 }
 
 export const collections: Collection[] = [
-  { id: 'tech', name: 'Tech', color: 'text-blue-600 bg-blue-50', dotColor: 'bg-blue-500', hex: '#3B82F6' },
-  { id: 'ai', name: 'AI & ML', color: 'text-violet-600 bg-violet-50', dotColor: 'bg-violet-500', hex: '#8B5CF6' },
-  { id: 'finance', name: 'Finance', color: 'text-emerald-600 bg-emerald-50', dotColor: 'bg-emerald-500', hex: '#10B981' },
-  { id: 'design', name: 'Design', color: 'text-pink-600 bg-pink-50', dotColor: 'bg-pink-500', hex: '#EC4899' },
-  { id: 'science', name: 'Science', color: 'text-cyan-600 bg-cyan-50', dotColor: 'bg-cyan-500', hex: '#06B6D4' },
-  { id: 'productivity', name: 'Productivity', color: 'text-amber-600 bg-amber-50', dotColor: 'bg-amber-500', hex: '#F59E0B' },
+  { id: 'tech', name: 'Tech', color: 'text-gray-600 bg-gray-100', dotColor: 'bg-gray-400', hex: '#5C564E' },
+  { id: 'ai', name: 'AI & ML', color: 'text-gray-600 bg-gray-100', dotColor: 'bg-gray-400', hex: '#5C564E' },
+  { id: 'finance', name: 'Finance', color: 'text-gray-600 bg-gray-100', dotColor: 'bg-gray-400', hex: '#5C564E' },
+  { id: 'design', name: 'Design', color: 'text-gray-600 bg-gray-100', dotColor: 'bg-gray-400', hex: '#5C564E' },
+  { id: 'science', name: 'Science', color: 'text-gray-600 bg-gray-100', dotColor: 'bg-gray-400', hex: '#5C564E' },
+  { id: 'productivity', name: 'Productivity', color: 'text-gray-600 bg-gray-100', dotColor: 'bg-gray-400', hex: '#5C564E' },
 ];
 
 export const categoryThumbBg: Record<string, string> = {
-  tech: 'bg-blue-50',
-  ai: 'bg-violet-50',
-  finance: 'bg-emerald-50',
-  design: 'bg-pink-50',
-  science: 'bg-cyan-50',
-  productivity: 'bg-amber-50',
+  tech: 'bg-gray-100',
+  ai: 'bg-gray-100',
+  finance: 'bg-gray-100',
+  design: 'bg-gray-100',
+  science: 'bg-gray-100',
+  productivity: 'bg-gray-100',
 };
 
 export const categoryThumbIcon: Record<string, string> = {
-  tech: 'text-blue-400',
-  ai: 'text-violet-400',
-  finance: 'text-emerald-400',
-  design: 'text-pink-400',
-  science: 'text-cyan-400',
-  productivity: 'text-amber-400',
+  tech: 'text-gray-500',
+  ai: 'text-gray-500',
+  finance: 'text-gray-500',
+  design: 'text-gray-500',
+  science: 'text-gray-500',
+  productivity: 'text-gray-500',
 };
 
 export const categoryBadge: Record<string, string> = {
-  tech: 'bg-blue-50 text-blue-700',
-  ai: 'bg-violet-50 text-violet-700',
-  finance: 'bg-emerald-50 text-emerald-700',
-  design: 'bg-pink-50 text-pink-700',
-  science: 'bg-cyan-50 text-cyan-700',
-  productivity: 'bg-amber-50 text-amber-700',
+  tech: 'bg-gray-100 text-gray-600',
+  ai: 'bg-gray-100 text-gray-600',
+  finance: 'bg-gray-100 text-gray-600',
+  design: 'bg-gray-100 text-gray-600',
+  science: 'bg-gray-100 text-gray-600',
+  productivity: 'bg-gray-100 text-gray-600',
 };
 
 export const demoItems: DemoItem[] = [

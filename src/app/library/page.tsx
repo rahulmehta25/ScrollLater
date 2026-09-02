@@ -311,7 +311,7 @@ export default function Home() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       className="h-screen flex bg-paper"
@@ -329,20 +329,30 @@ export default function Home() {
         onCommandPalette={() => setCommandOpen(true)}
       />
 
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 bg-paper">
         <MobileHeader onSearchClick={() => setCommandOpen(true)} />
 
-        <div className="bg-paper-raised border-b border-paper-deep">
-          <div className="flex items-center gap-2 px-4 py-3">
+        <div className="border-b border-paper-deep bg-paper">
+          <div className="mx-auto max-w-3xl px-5 sm:px-8 pt-8 pb-5">
+            <p className="text-xs uppercase tracking-[0.16em] text-ink-subtle">Your library</p>
+            <h1 className="mt-2 font-serif text-3xl tracking-display text-ink sm:text-4xl">
+              Reading for later
+            </h1>
+            <p className="mt-2 text-sm text-ink-muted">
+              {filteredItems.length} items / {Math.floor(totalReadTime / 60)}h {totalReadTime % 60}m set aside
+            </p>
+          </div>
+
+          <div className="mx-auto max-w-3xl px-5 sm:px-8 pb-4 flex items-center gap-2">
             <div className="flex items-center gap-1 flex-1 overflow-x-auto scrollbar-hide">
               {contentTypeFilters.map((f) => (
                 <button
                   key={f.id}
                   onClick={() => setActiveType(f.id)}
                   className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors',
+                    'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors duration-craft',
                     activeType === f.id
-                      ? 'bg-ink text-paper-raised'
+                      ? 'bg-ink text-paper'
                       : 'text-ink-muted hover:bg-paper-muted'
                   )}
                 >
@@ -351,32 +361,33 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="flex items-center gap-1.5 flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <button
-                onClick={() => setMobilePanel('digest')}
-                className="xl:hidden p-1.5 rounded-lg text-ink-muted hover:bg-paper-muted transition-colors duration-craft"
+                onClick={() => {
+                  setRightTab('digest');
+                  setMobilePanel('digest');
+                }}
+                className="p-1.5 rounded-lg text-ink-muted hover:bg-paper-muted transition-colors duration-craft"
                 aria-label="Open AI digest"
                 title="AI Digest"
               >
                 <Sparkles className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setMobilePanel('schedule')}
-                className="xl:hidden p-1.5 rounded-lg text-ink-muted hover:bg-paper-muted transition-colors duration-craft"
+                onClick={() => {
+                  setRightTab('schedule');
+                  setMobilePanel('schedule');
+                }}
+                className="p-1.5 rounded-lg text-ink-muted hover:bg-paper-muted transition-colors duration-craft"
                 aria-label="Open schedule"
                 title="Schedule"
               >
                 <Calendar className="w-4 h-4" />
               </button>
-
-              <span className="hidden sm:inline text-xs text-ink-faint">
-                {filteredItems.length} items / {Math.floor(totalReadTime / 60)}h {totalReadTime % 60}m
-              </span>
-              <div className="hidden sm:block w-px h-4 bg-paper-deep" />
               <button
                 onClick={() => setViewMode('list')}
                 className={cn(
-                  'p-1.5 rounded-lg transition-colors',
+                  'p-1.5 rounded-lg transition-colors duration-craft',
                   viewMode === 'list' ? 'bg-paper-muted text-ink' : 'text-ink-faint hover:text-ink-muted'
                 )}
                 aria-label="List view"
@@ -386,7 +397,7 @@ export default function Home() {
               <button
                 onClick={() => setViewMode('grid')}
                 className={cn(
-                  'p-1.5 rounded-lg transition-colors',
+                  'p-1.5 rounded-lg transition-colors duration-craft',
                   viewMode === 'grid' ? 'bg-paper-muted text-ink' : 'text-ink-faint hover:text-ink-muted'
                 )}
                 aria-label="Grid view"
@@ -396,173 +407,152 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="lg:hidden px-4 pb-3">
+          <div className="lg:hidden px-5 pb-4">
             <button
               onClick={() => setCommandOpen(true)}
-              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-ink-subtle bg-paper-soft border border-paper-deep rounded-xl"
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-ink-subtle bg-paper-muted/50 border border-paper-deep rounded-lg"
             >
               <Search className="w-3.5 h-3.5" />
               <span className="flex-1 text-left">Search items...</span>
-              <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-ink-faint bg-paper-raised border border-paper-deep rounded">
+              <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-ink-faint bg-paper border border-paper-deep rounded">
                 <Command className="w-2.5 h-2.5" />K
               </kbd>
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 pb-24 lg:pb-5">
-          {isLoading ? (
-            viewMode === 'list' ? (
-              <div className="max-w-3xl mx-auto space-y-2.5">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <SkeletonCard key={i} />
-                ))}
+        <div className="flex-1 overflow-y-auto pb-24 lg:pb-8">
+          <div className="band band-warm border-b border-paper-deep">
+            <div className="mx-auto max-w-3xl px-5 sm:px-8 py-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-ink-subtle">Today</p>
+                <p className="mt-1 font-serif text-xl tracking-display text-ink">
+                  A short digest of what waits for you.
+                </p>
               </div>
-            ) : (
-              <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-3">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <SkeletonCardGrid key={i} />
-                ))}
-              </div>
-            )
-          ) : filteredItems.length === 0 ? (
-            <div className="max-w-lg mx-auto mt-8 rounded-3xl border border-paper-deep bg-paper-raised shadow-soft">
-              <EmptyState
-                icon={empty.icon}
-                title={empty.title}
-                description={empty.description}
-                action={{
-                  label: empty.actionLabel,
-                  onClick: () => handleEmptyAction(empty.actionKey),
+              <button
+                onClick={() => {
+                  setRightTab('digest');
+                  setMobilePanel('digest');
                 }}
-                secondaryAction={
-                  empty.actionKey !== 'save'
-                    ? {
-                        label: 'Save link',
-                        onClick: () => setQuickAddOpen(true),
-                      }
-                    : {
-                        label: 'View digest',
-                        onClick: () => setMobilePanel('digest'),
-                      }
-                }
-              />
+                className="link-underline text-sm self-start sm:self-auto"
+              >
+                Open digest
+              </button>
             </div>
-          ) : viewMode === 'list' ? (
-            <motion.div
-              layout
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="max-w-3xl mx-auto space-y-2.5"
-            >
-              <AnimatePresence mode="popLayout">
-                {filteredItems.map((item) => (
-                  <ContentCard
-                    key={item.id}
-                    item={item}
-                    onClick={() => setSelectedItem(item)}
-                  />
-                ))}
-              </AnimatePresence>
-            </motion.div>
-          ) : (
-            <motion.div
-              layout
-              variants={gridContainerVariants}
-              initial="hidden"
-              animate="visible"
-              className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-3"
-            >
-              <AnimatePresence mode="popLayout">
-                {filteredItems.map((item) => (
-                  <ContentCardGrid
-                    key={item.id}
-                    item={item}
-                    onClick={() => setSelectedItem(item)}
-                  />
-                ))}
-              </AnimatePresence>
-            </motion.div>
-          )}
+          </div>
+
+          <div className="mx-auto max-w-3xl px-5 sm:px-8 pt-2">
+            {isLoading ? (
+              viewMode === 'list' ? (
+                <div className="space-y-1">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <SkeletonCard key={i} />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+                  {[1, 2, 3, 4].map((i) => (
+                    <SkeletonCardGrid key={i} />
+                  ))}
+                </div>
+              )
+            ) : filteredItems.length === 0 ? (
+              <div className="band border-y border-paper-deep my-8">
+                <EmptyState
+                  icon={empty.icon}
+                  title={empty.title}
+                  description={empty.description}
+                  action={{
+                    label: empty.actionLabel,
+                    onClick: () => handleEmptyAction(empty.actionKey),
+                  }}
+                  secondaryAction={
+                    empty.actionKey !== 'save'
+                      ? {
+                          label: 'Save link',
+                          onClick: () => setQuickAddOpen(true),
+                        }
+                      : {
+                          label: 'View digest',
+                          onClick: () => setMobilePanel('digest'),
+                        }
+                  }
+                />
+              </div>
+            ) : viewMode === 'list' ? (
+              <motion.div
+                layout
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                <AnimatePresence mode="popLayout">
+                  {filteredItems.map((item) => (
+                    <ContentCard
+                      key={item.id}
+                      item={item}
+                      onClick={() => setSelectedItem(item)}
+                    />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            ) : (
+              <motion.div
+                layout
+                variants={gridContainerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 sm:grid-cols-2 gap-x-10"
+              >
+                <AnimatePresence mode="popLayout">
+                  {filteredItems.map((item) => (
+                    <ContentCardGrid
+                      key={item.id}
+                      item={item}
+                      onClick={() => setSelectedItem(item)}
+                    />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </div>
         </div>
       </main>
-
-      <aside className="hidden xl:flex w-80 flex-col border-l border-paper-deep bg-paper-raised">
-        <div className="flex border-b border-paper-deep">
-          <button
-            onClick={() => setRightTab('schedule')}
-            className={cn(
-              'flex-1 py-3 text-xs font-medium text-center transition-colors border-b-2',
-              rightTab === 'schedule'
-                ? 'border-ink text-ink'
-                : 'border-transparent text-ink-subtle hover:text-ink-muted'
-            )}
-          >
-            <Calendar className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />
-            Schedule
-          </button>
-          <button
-            onClick={() => setRightTab('digest')}
-            className={cn(
-              'flex-1 py-3 text-xs font-medium text-center transition-colors border-b-2',
-              rightTab === 'digest'
-                ? 'border-ink text-ink'
-                : 'border-transparent text-ink-subtle hover:text-ink-muted'
-            )}
-          >
-            <Sparkles className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />
-            AI Digest
-          </button>
-        </div>
-
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={rightTab}
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.15 }}
-            className="flex-1 overflow-hidden"
-          >
-            {rightTab === 'schedule' ? schedulePanel : digestPanel}
-          </motion.div>
-        </AnimatePresence>
-      </aside>
 
       <AnimatePresence>
         {mobilePanel && (
           <motion.div
-            className="xl:hidden fixed inset-0 z-50"
+            className="fixed inset-0 z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <button
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-ink/30 backdrop-blur-sm"
               aria-label="Close panel"
               onClick={() => setMobilePanel(null)}
             />
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 380, damping: 36 }}
-              className="absolute bottom-0 left-0 right-0 max-h-[85vh] bg-paper-raised rounded-t-3xl shadow-lift flex flex-col overflow-hidden"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute top-0 right-0 bottom-0 w-full max-w-md bg-paper border-l border-paper-deep flex flex-col overflow-hidden"
             >
-              <div className="flex items-center justify-between px-4 py-3 border-b border-paper-deep">
-                <p className="font-serif text-sm tracking-display text-ink">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-paper-deep">
+                <p className="font-serif text-base tracking-display text-ink">
                   {mobilePanel === 'digest' ? 'AI Digest' : 'Schedule'}
                 </p>
                 <button
                   onClick={() => setMobilePanel(null)}
-                  className="p-1.5 rounded-lg text-ink-faint hover:text-ink-muted hover:bg-paper-muted transition-colors"
+                  className="p-1.5 rounded-lg text-ink-faint hover:text-ink-muted hover:bg-paper-muted transition-colors duration-craft"
                   aria-label="Close"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <div className="flex-1 overflow-hidden min-h-[420px]">
+              <div className="flex-1 overflow-hidden">
                 {mobilePanel === 'digest' ? digestPanel : schedulePanel}
               </div>
             </motion.div>

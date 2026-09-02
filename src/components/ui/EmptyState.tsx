@@ -30,26 +30,23 @@ function EmptyState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center py-16 px-6 text-center animate-fade-in-scale',
+        'flex flex-col items-start sm:items-center justify-center py-14 px-2 text-left sm:text-center animate-fade-in-scale',
         className
       )}
     >
-      <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-paper-deep bg-paper-muted text-ink-subtle">
-        {icon || (
-          <svg viewBox="0 0 48 48" className="h-7 w-7" fill="none" aria-hidden>
-            <rect x="10" y="12" width="28" height="24" rx="3" className="stroke-current" strokeWidth="1.5" />
-            <path d="M16 20h16M16 25h12M16 30h8" className="stroke-current" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        )}
-      </div>
-      <h3 className="font-serif text-xl tracking-display text-ink mb-2">{title}</h3>
+      {icon && (
+        <div className="mb-5 text-ink-subtle">
+          {icon}
+        </div>
+      )}
+      <h3 className="font-serif text-2xl tracking-display text-ink mb-2">{title}</h3>
       {description && (
-        <p className="text-sm text-ink-muted max-w-sm leading-relaxed mb-6">{description}</p>
+        <p className="text-sm text-ink-muted max-w-md leading-relaxed mb-6">{description}</p>
       )}
       {(action || secondaryAction) && (
-        <div className="flex flex-wrap items-center justify-center gap-4">
+        <div className="flex flex-wrap items-center sm:justify-center gap-4">
           {action && (
-            <Button size="sm" onClick={action.onClick}>
+            <Button size="sm" className="rounded-full" onClick={action.onClick}>
               {action.label}
             </Button>
           )}

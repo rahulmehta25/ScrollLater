@@ -79,14 +79,14 @@ function Sidebar({
   return (
     <aside
       className={cn(
-        'hidden lg:flex w-60 flex-col border-r border-paper-deep bg-paper-raised',
+        'hidden lg:flex w-56 flex-col border-r border-paper-deep bg-paper relative z-20',
         className
       )}
     >
-      <div className="p-4 border-b border-paper-deep/80">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 bg-ink rounded-lg flex items-center justify-center transition-transform duration-300 ease-calm group-hover:scale-105">
-            <BookOpen className="w-4 h-4 text-paper-raised" strokeWidth={2.25} />
+      <div className="p-5 border-b border-paper-deep">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="w-8 h-8 bg-ink rounded-md flex items-center justify-center">
+            <BookOpen className="w-4 h-4 text-paper" strokeWidth={2.25} />
           </div>
           <span className="font-serif text-lg tracking-display text-ink">
             ScrollLater
@@ -94,29 +94,29 @@ function Sidebar({
         </Link>
       </div>
 
-      <div className="p-3 space-y-2">
+      <div className="p-4 space-y-2">
         <button
           onClick={onCommandPalette}
-          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-subtle bg-paper-soft border border-paper-deep rounded-xl hover:bg-paper-muted hover:border-ink-faint transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-subtle bg-paper-muted/60 border border-paper-deep rounded-lg hover:bg-paper-muted transition-colors duration-craft"
         >
           <Search className="w-3.5 h-3.5" />
           <span className="flex-1 text-left">Search...</span>
-          <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-ink-faint bg-paper-raised border border-paper-deep rounded">
+          <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-ink-faint bg-paper border border-paper-deep rounded">
             <Command className="w-2.5 h-2.5" />K
           </kbd>
         </button>
 
         <button
           onClick={onAddClick}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-paper bg-ink rounded-xl transition-opacity duration-craft hover:opacity-90"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-paper bg-ink rounded-full transition-opacity duration-craft hover:opacity-90"
         >
           <Plus className="w-4 h-4" />
           Save Link
         </button>
       </div>
 
-      <nav className="flex-1 px-2 py-1 overflow-y-auto">
-        <p className="px-2 py-1.5 text-[11px] font-medium text-ink-faint uppercase tracking-[0.14em]">
+      <nav className="flex-1 px-3 py-1 overflow-y-auto">
+        <p className="px-2 py-2 text-[11px] font-medium text-ink-faint uppercase tracking-[0.14em]">
           Library
         </p>
         {navItems.map((item) => {
@@ -127,20 +127,12 @@ function Sidebar({
               key={item.id}
               onClick={() => onCollectionChange?.(item.id)}
               className={cn(
-                'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-sm transition-all duration-200 relative',
+                'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors duration-craft relative',
                 isActive
-                  ? 'text-ink font-medium'
-                  : 'text-ink-muted hover:bg-paper-muted/80 hover:text-ink'
+                  ? 'text-ink font-medium bg-paper-muted'
+                  : 'text-ink-muted hover:bg-paper-muted/70 hover:text-ink'
               )}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="sidebar-active"
-                  className="absolute inset-0 bg-paper-muted rounded-xl"
-                  initial={false}
-                  transition={{ type: 'spring', bounce: 0.18, duration: 0.45 }}
-                />
-              )}
               <Icon className="w-4 h-4 relative z-10" />
               <span className="flex-1 text-left relative z-10">{item.label}</span>
               {item.count > 0 && (
@@ -152,16 +144,16 @@ function Sidebar({
           );
         })}
 
-        <div className="my-3 border-t border-paper-deep/80" />
+        <div className="my-3 border-t border-paper-deep" />
 
         <button
           onClick={() => setCollectionsExpanded(!collectionsExpanded)}
-          className="w-full flex items-center gap-2 px-2 py-1.5 text-[11px] font-medium text-ink-faint uppercase tracking-[0.14em] hover:text-ink-subtle transition-colors"
+          className="w-full flex items-center gap-2 px-2 py-1.5 text-[11px] font-medium text-ink-faint uppercase tracking-[0.14em] hover:text-ink-subtle transition-colors duration-craft"
         >
           <span>Collections</span>
           <ChevronDown
             className={cn(
-              'w-3 h-3 transition-transform',
+              'w-3 h-3 transition-transform duration-craft',
               collectionsExpanded && 'rotate-180'
             )}
           />
@@ -171,8 +163,7 @@ function Sidebar({
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.18 }}
           >
             {collections.map((col) => {
               const isActive = activeCollection === col.id;
@@ -181,16 +172,13 @@ function Sidebar({
                   key={col.id}
                   onClick={() => onCollectionChange?.(col.id)}
                   className={cn(
-                    'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-sm transition-all duration-200',
+                    'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors duration-craft',
                     isActive
                       ? 'bg-paper-muted text-ink font-medium'
-                      : 'text-ink-muted hover:bg-paper-muted/80 hover:text-ink'
+                      : 'text-ink-muted hover:bg-paper-muted/70 hover:text-ink'
                   )}
                 >
-                  <span
-                    className="w-2.5 h-2.5 rounded-full transition-transform duration-150"
-                    style={{ backgroundColor: col.color, transform: isActive ? 'scale(1.15)' : 'scale(1)' }}
-                  />
+                  <span className="w-1 h-1 rounded-full bg-ink-faint" />
                   <span className="flex-1 text-left truncate">{col.name}</span>
                   {col.count > 0 && (
                     <span className="text-xs text-ink-faint tabular-nums">
@@ -209,14 +197,14 @@ function Sidebar({
         )}
       </nav>
 
-      <div className="p-3 border-t border-paper-deep/80">
+      <div className="relative z-30 p-4 pb-8 border-t border-paper-deep bg-paper">
         <Link
           href="/dashboard/settings"
           className={cn(
-            'flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-sm transition-colors',
+            'flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm transition-colors duration-craft',
             pathname === '/dashboard/settings'
               ? 'bg-paper-muted text-ink font-medium'
-              : 'text-ink-muted hover:bg-paper-muted/80 hover:text-ink'
+              : 'text-ink-muted hover:bg-paper-muted/70 hover:text-ink'
           )}
         >
           <Settings className="w-4 h-4" />

@@ -79,7 +79,7 @@ export function InstallPrompt() {
   if (!allowPrompt || isStandalone || !showPrompt) return null
 
   return (
-    <div className="fixed bottom-20 lg:bottom-5 right-4 z-40 animate-slide-up pointer-events-none">
+    <div className="fixed bottom-20 lg:bottom-5 right-4 z-30 animate-slide-up pointer-events-none">
       <div className="pointer-events-auto max-w-[260px] ml-auto">
         {!expanded ? (
           <div className="flex items-center gap-2 rounded-full bg-paper-raised/95 backdrop-blur border border-paper-deep shadow-soft pl-2 pr-1 py-1">

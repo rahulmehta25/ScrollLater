@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { scheduleDays, collections, type DemoItem } from '@/lib/demo-data';
+import { scheduleDays, type DemoItem } from '@/lib/demo-data';
 
 interface SchedulePanelProps {
   items: DemoItem[];
@@ -108,12 +108,7 @@ export function SchedulePanel({ items, onItemClick }: SchedulePanelProps) {
                     onClick={() => onItemClick?.(item)}
                     className="w-full flex items-center gap-2 px-2.5 py-2 bg-paper-soft border border-transparent rounded-xl hover:bg-paper hover:border-paper-deep transition-colors duration-craft cursor-pointer group text-left"
                   >
-                    <div
-                      className={cn(
-                        'w-1 h-8 rounded-full flex-shrink-0',
-                        collections.find((c) => c.id === item.category)?.dotColor
-                      )}
-                    />
+                    <div className="w-px h-8 flex-shrink-0 bg-ink-faint" />
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-ink truncate group-hover:text-ink">
                         {item.title}
@@ -126,7 +121,7 @@ export function SchedulePanel({ items, onItemClick }: SchedulePanelProps) {
                 ))}
               </div>
             ) : (
-              <div className="px-2.5 py-2.5 mb-2 rounded-xl border border-dashed border-paper-deep bg-paper-soft/60">
+              <div className="px-1 py-2.5 mb-2 border-b border-paper-deep/70">
                 <p className="text-[11px] text-ink-faint">
                   {weekOffset === 0 ? 'Free slot. Open an item to schedule it.' : 'Nothing planned yet.'}
                 </p>

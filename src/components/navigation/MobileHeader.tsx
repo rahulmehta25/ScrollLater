@@ -14,7 +14,7 @@ function MobileHeader({ title = 'ScrollLater', onSearchClick, className }: Mobil
   return (
     <header
       className={cn(
-        'lg:hidden sticky top-0 flex items-center justify-between px-4 h-14 bg-paper-raised/95 backdrop-blur border-b border-paper-deep z-30',
+        'lg:hidden sticky top-0 flex items-center justify-between px-4 h-14 bg-paper border-b border-paper-deep z-40',
         className
       )}
     >

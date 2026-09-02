@@ -51,7 +51,7 @@ html {
 
 @layer base {
   * {
-    border-color: theme('colors.paper.deep');
+    border-color: #E6DFD7;
   }
 
   h1, h2, h3 {
@@ -69,13 +69,12 @@ html {
     background: #E6DFD7;
   }
 
-  /* Secondary actions: link-as-underline */
   .link-underline {
     color: #2A2622;
     text-decoration: underline;
     text-decoration-color: #E6DFD7;
     text-underline-offset: 0.18em;
-    transition: all 180ms ease;
+    transition: color 180ms ease, text-decoration-color 180ms ease;
   }
 
   .link-underline:hover {
@@ -99,6 +98,50 @@ html {
     color: #F9F8F6;
   }
 
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background-color: rgba(249, 248, 246, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid #E6DFD7;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: #2A2622;
+    color: #F9F8F6;
+    padding: 0.875rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: opacity 180ms ease;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+
+  .btn-primary-inverse {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: #F9F8F6;
+    color: #2A2622;
+    padding: 0.875rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: opacity 180ms ease;
+  }
+
+  .btn-primary-inverse:hover {
+    opacity: 0.9;
+  }
+
   .connector {
     margin-left: auto;
     margin-right: auto;
@@ -110,7 +153,7 @@ html {
     font-style: italic;
     color: #8A8378;
   }
-  
+
   @media (min-width: 640px) {
     .connector {
       padding-left: 2rem;
@@ -118,9 +161,21 @@ html {
       font-size: 1.125rem;
     }
   }
+
+  .library-row {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid #E6DFD7;
+    cursor: pointer;
+    transition: opacity 180ms ease;
+  }
+
+  .library-row:hover {
+    opacity: 0.82;
+  }
 }
 
-/* Fade + rise entrance; hover stays 150-200ms */
 @keyframes slide-up {
   from {
     opacity: 0;
