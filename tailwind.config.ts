@@ -9,13 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Quiet reading room palette
+        // Quiet reading room: warm neutrals first, scarce accent
         paper: {
-          DEFAULT: '#F7F4EF',
-          soft: '#FAF8F4',
-          raised: '#FFFCF7',
-          muted: '#EFE9E0',
-          deep: '#E5DFD4',
+          DEFAULT: '#F9F8F6',
+          soft: '#F9F8F6',
+          raised: '#F9F8F6',
+          muted: '#F0EBE6',
+          deep: '#E6DFD7',
+          band: '#F0EBE6',
         },
         ink: {
           DEFAULT: '#2A2622',
@@ -60,9 +61,9 @@ const config: Config = {
           900: '#3D2218',
         },
         gray: {
-          50: '#F7F4EF',
-          100: '#EFE9E0',
-          200: '#E5DFD4',
+          50: '#F9F8F6',
+          100: '#F0EBE6',
+          200: '#E6DFD7',
           300: '#D4CDC0',
           400: '#B0A99C',
           500: '#8A8378',
@@ -87,9 +88,11 @@ const config: Config = {
         display: '-0.02em',
       },
       boxShadow: {
-        soft: '0 1px 2px rgba(42, 38, 34, 0.04), 0 4px 16px rgba(42, 38, 34, 0.04)',
-        lift: '0 8px 28px rgba(42, 38, 34, 0.08)',
-        glow: '0 0 0 1px rgba(184, 106, 75, 0.12), 0 8px 24px rgba(184, 106, 75, 0.08)',
+        soft: '0 1px 2px rgba(42, 38, 34, 0.03), 0 4px 14px rgba(42, 38, 34, 0.04)',
+        lift: '0 8px 24px rgba(42, 38, 34, 0.06)',
+      },
+      transitionDuration: {
+        craft: '180ms',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
@@ -111,7 +114,7 @@ const config: Config = {
           '50%': { transform: 'translateY(-4px)' },
         },
         rise: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '0%': { opacity: '0', transform: 'translateY(16px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },

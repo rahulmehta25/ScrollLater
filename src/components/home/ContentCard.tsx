@@ -24,11 +24,10 @@ export function ContentCard({ item, onClick }: { item: DemoItem; onClick?: () =>
       layout
       variants={cardVariants}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ y: -2, boxShadow: '0 8px 28px rgba(42, 38, 34, 0.08)' }}
-      transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+      transition={{ duration: 0.18 }}
       onClick={onClick}
       className={cn(
-        'group flex gap-3.5 p-4 bg-paper-raised border border-paper-deep rounded-2xl hover:border-ink-faint transition-colors cursor-pointer',
+        'group flex gap-3.5 p-4 bg-paper border border-paper-deep rounded-2xl hover:border-ink-faint transition-colors duration-craft cursor-pointer',
         item.isRead && 'opacity-60'
       )}
       role="button"
@@ -80,14 +79,12 @@ export function ContentCard({ item, onClick }: { item: DemoItem; onClick?: () =>
 
         <div className="mt-2 flex items-center gap-1.5">
           {item.tags.slice(0, 3).map((tag) => (
-            <motion.span
+            <span
               key={tag}
-              whileHover={{ scale: 1.04 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              className="px-1.5 py-0.5 bg-paper-soft text-ink-subtle rounded-md text-[10px] border border-paper-deep cursor-default hover:bg-paper-muted hover:text-ink-muted transition-colors"
+              className="px-1.5 py-0.5 bg-paper-soft text-ink-subtle rounded-md text-[10px] border border-paper-deep cursor-default transition-colors duration-craft hover:bg-paper-muted hover:text-ink-muted"
             >
               {tag}
-            </motion.span>
+            </span>
           ))}
         </div>
       </div>

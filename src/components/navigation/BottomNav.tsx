@@ -39,19 +39,16 @@ function BottomNav({
 
           if (tab.isAction) {
             return (
-              <motion.button
+              <button
                 key={tab.id}
                 onClick={onAddClick}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                className="relative -mt-5"
+                className="relative -mt-5 transition-opacity duration-craft hover:opacity-90"
                 aria-label="Save link"
               >
-                <div className="w-14 h-14 bg-terracotta-500 rounded-2xl flex items-center justify-center shadow-glow">
-                  <Plus className="w-6 h-6 text-white" strokeWidth={2} />
+                <div className="w-14 h-14 bg-ink rounded-2xl flex items-center justify-center shadow-soft">
+                  <Plus className="w-6 h-6 text-paper" strokeWidth={2} />
                 </div>
-              </motion.button>
+              </button>
             );
           }
 
@@ -64,15 +61,15 @@ function BottomNav({
               {isActive && (
                 <motion.div
                   layoutId="bottom-nav-active"
-                  className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-terracotta-500 rounded-b-full"
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-ink rounded-b-full"
                   initial={false}
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+                  transition={{ duration: 0.18 }}
                 />
               )}
               <Icon
                 className={cn(
-                  'w-5 h-5 transition-colors',
-                  isActive ? 'text-terracotta-600' : 'text-ink-faint'
+                  'w-5 h-5 transition-colors duration-craft',
+                  isActive ? 'text-ink' : 'text-ink-faint'
                 )}
               />
               <span

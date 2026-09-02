@@ -24,11 +24,10 @@ export function ContentCardGrid({ item, onClick }: { item: DemoItem; onClick?: (
       layout
       variants={cardVariants}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ y: -2, boxShadow: '0 8px 28px rgba(42, 38, 34, 0.08)' }}
-      transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+      transition={{ duration: 0.18 }}
       onClick={onClick}
       className={cn(
-        'group bg-paper-raised border border-paper-deep rounded-2xl hover:border-ink-faint transition-colors cursor-pointer overflow-hidden h-full',
+        'group bg-paper border border-paper-deep rounded-2xl hover:border-ink-faint transition-colors duration-craft cursor-pointer overflow-hidden h-full',
         item.isRead && 'opacity-60'
       )}
       role="button"

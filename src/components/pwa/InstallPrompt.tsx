@@ -83,8 +83,8 @@ export function InstallPrompt() {
       <div className="pointer-events-auto max-w-[260px] ml-auto">
         {!expanded ? (
           <div className="flex items-center gap-2 rounded-full bg-paper-raised/95 backdrop-blur border border-paper-deep shadow-soft pl-2 pr-1 py-1">
-            <div className="w-8 h-8 rounded-full bg-terracotta-500 flex items-center justify-center flex-shrink-0">
-              <BookOpen className="w-3.5 h-3.5 text-white" />
+            <div className="w-8 h-8 rounded-full bg-ink flex items-center justify-center flex-shrink-0">
+              <BookOpen className="w-3.5 h-3.5 text-paper" />
             </div>
             <button
               onClick={() => setExpanded(true)}
@@ -120,8 +120,8 @@ export function InstallPrompt() {
             </button>
 
             <div className="flex items-start gap-3 pr-4">
-              <div className="w-10 h-10 bg-terracotta-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                <BookOpen className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 bg-ink rounded-xl flex items-center justify-center flex-shrink-0">
+                <BookOpen className="w-5 h-5 text-paper" />
               </div>
               <div className="min-w-0">
                 <h3 className="font-serif text-sm tracking-display text-ink">

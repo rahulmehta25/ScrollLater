@@ -354,7 +354,7 @@ export default function Home() {
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <button
                 onClick={() => setMobilePanel('digest')}
-                className="xl:hidden p-1.5 rounded-lg text-terracotta-600 hover:bg-terracotta-50 transition-colors"
+                className="xl:hidden p-1.5 rounded-lg text-ink-muted hover:bg-paper-muted transition-colors duration-craft"
                 aria-label="Open AI digest"
                 title="AI Digest"
               >
@@ -362,7 +362,7 @@ export default function Home() {
               </button>
               <button
                 onClick={() => setMobilePanel('schedule')}
-                className="xl:hidden p-1.5 rounded-lg text-olive-600 hover:bg-olive-50 transition-colors"
+                className="xl:hidden p-1.5 rounded-lg text-ink-muted hover:bg-paper-muted transition-colors duration-craft"
                 aria-label="Open schedule"
                 title="Schedule"
               >
@@ -495,7 +495,7 @@ export default function Home() {
             className={cn(
               'flex-1 py-3 text-xs font-medium text-center transition-colors border-b-2',
               rightTab === 'schedule'
-                ? 'border-terracotta-500 text-ink'
+                ? 'border-ink text-ink'
                 : 'border-transparent text-ink-subtle hover:text-ink-muted'
             )}
           >
@@ -507,7 +507,7 @@ export default function Home() {
             className={cn(
               'flex-1 py-3 text-xs font-medium text-center transition-colors border-b-2',
               rightTab === 'digest'
-                ? 'border-terracotta-500 text-ink'
+                ? 'border-ink text-ink'
                 : 'border-transparent text-ink-subtle hover:text-ink-muted'
             )}
           >

@@ -3,16 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --background: #F7F4EF;
+  --background: #F9F8F6;
   --foreground: #2A2622;
-  --paper: #F7F4EF;
-  --paper-raised: #FFFCF7;
+  --paper: #F9F8F6;
+  --paper-band: #F0EBE6;
+  --paper-raised: #F9F8F6;
   --ink: #2A2622;
   --ink-muted: #5C564E;
   --accent: #B86A4B;
-  --accent-soft: #F3E0D4;
   --olive: #6B7355;
-  --border: #E5DFD4;
+  --border: #E6DFD7;
 }
 
 body {
@@ -27,7 +27,7 @@ html {
 }
 
 ::selection {
-  background: #E8C4B0;
+  background: #F0EBE6;
   color: #2A2622;
 }
 
@@ -66,15 +66,65 @@ html {
 
   .reading-rule {
     height: 1px;
-    background: linear-gradient(90deg, transparent, #E5DFD4 20%, #E5DFD4 80%, transparent);
+    background: #E6DFD7;
+  }
+
+  /* Secondary actions: link-as-underline */
+  .link-underline {
+    color: #2A2622;
+    text-decoration: underline;
+    text-decoration-color: #E6DFD7;
+    text-underline-offset: 0.18em;
+    transition: all 180ms ease;
+  }
+
+  .link-underline:hover {
+    text-decoration-color: #2A2622;
+  }
+
+  .band {
+    width: 100%;
+  }
+
+  .band-paper {
+    background-color: #F9F8F6;
+  }
+
+  .band-warm {
+    background-color: #F0EBE6;
+  }
+
+  .band-ink {
+    background-color: #2A2622;
+    color: #F9F8F6;
+  }
+
+  .connector {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 72rem;
+    padding: 2rem 1.25rem;
+    text-align: center;
+    font-family: var(--font-serif), Georgia, serif;
+    font-size: 1rem;
+    font-style: italic;
+    color: #8A8378;
+  }
+  
+  @media (min-width: 640px) {
+    .connector {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      font-size: 1.125rem;
+    }
   }
 }
 
-/* Calm motion primitives */
+/* Fade + rise entrance; hover stays 150-200ms */
 @keyframes slide-up {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -83,7 +133,7 @@ html {
 }
 
 .animate-slide-up {
-  animation: slide-up 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: slide-up 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @supports (padding: env(safe-area-inset-bottom)) {
@@ -107,47 +157,28 @@ html {
 .skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    #EFE9E0 0%,
-    #F7F4EF 40%,
-    #EFE9E0 80%
+    #F0EBE6 0%,
+    #F9F8F6 40%,
+    #F0EBE6 80%
   );
   background-size: 800px 100%;
   animation: shimmer 1.8s ease-in-out infinite;
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: translateY(0); }
 }
 @keyframes fadeInScale {
-  from { opacity: 0; transform: scale(0.97); }
+  from { opacity: 0; transform: scale(0.985); }
   to { opacity: 1; transform: scale(1); }
-}
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(16px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-@keyframes bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-@keyframes softPulse {
-  0%, 100% { opacity: 0.55; }
-  50% { opacity: 1; }
 }
 
 .animate-fade-in-up { animation: fadeInUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .animate-fade-in-scale { animation: fadeInScale 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.animate-slide-in-right { animation: slideInRight 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.animate-bob { animation: bob 4s ease-in-out infinite; }
-.animate-soft-pulse { animation: softPulse 3.5s ease-in-out infinite; }
 
 .hover-lift {
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(42, 38, 34, 0.08);
+  transition: opacity 180ms ease, color 180ms ease, background-color 180ms ease, border-color 180ms ease;
 }
 
 .stagger-1 { animation-delay: 0.06s; }
@@ -168,5 +199,9 @@ html {
 
   .translate-x-4\.5 {
     transform: translateX(1.125rem);
+  }
+
+  .duration-craft {
+    transition-duration: 180ms;
   }
 }

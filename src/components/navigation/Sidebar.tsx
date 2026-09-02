@@ -106,16 +106,13 @@ function Sidebar({
           </kbd>
         </button>
 
-        <motion.button
+        <button
           onClick={onAddClick}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-paper-raised bg-terracotta-500 rounded-xl hover:bg-terracotta-600 transition-colors shadow-glow"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-paper bg-ink rounded-xl transition-opacity duration-craft hover:opacity-90"
         >
           <Plus className="w-4 h-4" />
           Save Link
-        </motion.button>
+        </button>
       </div>
 
       <nav className="flex-1 px-2 py-1 overflow-y-auto">
@@ -144,7 +141,7 @@ function Sidebar({
                   transition={{ type: 'spring', bounce: 0.18, duration: 0.45 }}
                 />
               )}
-              <Icon className={cn('w-4 h-4 relative z-10', isActive && 'text-terracotta-600')} />
+              <Icon className="w-4 h-4 relative z-10" />
               <span className="flex-1 text-left relative z-10">{item.label}</span>
               {item.count > 0 && (
                 <span className="text-xs text-ink-faint tabular-nums relative z-10">

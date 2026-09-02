@@ -105,9 +105,8 @@ export function SchedulePanel({ items, onItemClick }: SchedulePanelProps) {
                   <motion.button
                     type="button"
                     key={item.id}
-                    whileHover={{ x: 2 }}
                     onClick={() => onItemClick?.(item)}
-                    className="w-full flex items-center gap-2 px-2.5 py-2 bg-paper-soft border border-transparent rounded-xl hover:bg-paper-raised hover:border-paper-deep transition-colors cursor-pointer group text-left"
+                    className="w-full flex items-center gap-2 px-2.5 py-2 bg-paper-soft border border-transparent rounded-xl hover:bg-paper hover:border-paper-deep transition-colors duration-craft cursor-pointer group text-left"
                   >
                     <div
                       className={cn(
