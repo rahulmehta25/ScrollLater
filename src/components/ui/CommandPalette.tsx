@@ -32,6 +32,10 @@ interface CommandPaletteProps {
   onClose: () => void;
   onSaveLink?: () => void;
   onNavigate?: (path: string) => void;
+  onOpenDigest?: () => void;
+  onOpenSchedule?: () => void;
+  onBrowseCollections?: () => void;
+  onSelectRecent?: (id: string) => void;
   recentItems?: Array<{ id: string; title: string; type: string }>;
 }
 
@@ -40,6 +44,10 @@ function CommandPalette({
   onClose,
   onSaveLink,
   onNavigate,
+  onOpenDigest,
+  onOpenSchedule,
+  onBrowseCollections,
+  onSelectRecent,
   recentItems = [],
 }: CommandPaletteProps) {
   const [query, setQuery] = useState('');
@@ -73,32 +81,34 @@ function CommandPalette({
       {
         id: 'schedule',
         name: 'Schedule reading time',
-        description: 'Block time on your calendar',
+        description: 'Review your reading calendar',
         icon: <Calendar className="w-4 h-4" />,
         shortcut: ['S'],
         section: 'actions',
         action: () => {
           onClose();
+          onOpenSchedule?.();
         },
       },
       {
         id: 'ai-digest',
-        name: 'Generate AI digest',
-        description: 'Get a summary of your reading list',
+        name: 'Open AI digest',
+        description: 'Browse themes across your reading list',
         icon: <Sparkles className="w-4 h-4" />,
         section: 'actions',
         action: () => {
           onClose();
+          onOpenDigest?.();
         },
       },
       {
         id: 'nav-dashboard',
-        name: 'Go to Dashboard',
+        name: 'Go to Library',
         icon: <FolderOpen className="w-4 h-4" />,
         section: 'navigation',
         action: () => {
           onClose();
-          onNavigate?.('/dashboard');
+          onNavigate?.('/');
         },
       },
       {
@@ -119,6 +129,7 @@ function CommandPalette({
         section: 'navigation',
         action: () => {
           onClose();
+          onBrowseCollections?.();
         },
       },
     ];
@@ -132,12 +143,22 @@ function CommandPalette({
         section: 'recent',
         action: () => {
           onClose();
+          onSelectRecent?.(item.id);
         },
       });
     });
 
     return items;
-  }, [onClose, onSaveLink, onNavigate, recentItems]);
+  }, [
+    onClose,
+    onSaveLink,
+    onNavigate,
+    onOpenDigest,
+    onOpenSchedule,
+    onBrowseCollections,
+    onSelectRecent,
+    recentItems,
+  ]);
 
   const filteredCommands = useMemo(() => {
     if (!query) return commands;

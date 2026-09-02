@@ -190,8 +190,11 @@ function Sidebar({
                   )}
                 >
                   <span
-                    className="w-2.5 h-2.5 rounded-full transition-transform duration-150"
-                    style={{ backgroundColor: col.color, transform: isActive ? 'scale(1.2)' : 'scale(1)' }}
+                    className="w-2.5 h-2.5 rounded-full transition-transform duration-150 flex-shrink-0"
+                    style={{
+                      backgroundColor: col.color.startsWith('#') ? col.color : undefined,
+                      transform: isActive ? 'scale(1.2)' : 'scale(1)',
+                    }}
                   />
                   <span className="flex-1 text-left truncate">{col.name}</span>
                   {col.count > 0 && (
@@ -203,8 +206,8 @@ function Sidebar({
               );
             })}
             {collections.length === 0 && (
-              <p className="px-2.5 py-2 text-xs text-gray-400 italic">
-                No collections yet
+              <p className="px-2.5 py-2 text-xs text-gray-400">
+                No collections yet. Save a link to start one.
               </p>
             )}
           </motion.div>

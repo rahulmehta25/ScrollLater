@@ -67,6 +67,8 @@ describe('demo-data', () => {
         expect(collection).toHaveProperty('name')
         expect(collection).toHaveProperty('color')
         expect(collection).toHaveProperty('dotColor')
+        expect(collection).toHaveProperty('hex')
+        expect(collection.hex).toMatch(/^#[0-9A-Fa-f]{6}$/)
       })
     })
 

@@ -2,17 +2,24 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { scheduleDays, collections, type DemoItem } from '@/lib/demo-data';
 
-export function SchedulePanel({ items }: { items: DemoItem[] }) {
+interface SchedulePanelProps {
+  items: DemoItem[];
+  onItemClick?: (item: DemoItem) => void;
+}
+
+export function SchedulePanel({ items, onItemClick }: SchedulePanelProps) {
   const [weekOffset, setWeekOffset] = useState(0);
 
   const days = scheduleDays.map((day, i) => ({
     ...day,
     label: weekOffset === 0 ? day.label : `Mar ${7 + i + weekOffset * 7}`,
-    items: items.filter((item) => item.scheduledDate === day.date),
+    items: weekOffset === 0
+      ? items.filter((item) => item.scheduledDate === day.date)
+      : [],
   }));
 
   const totalScheduled = items.filter((i) => i.scheduledDate).length;
@@ -24,12 +31,18 @@ export function SchedulePanel({ items }: { items: DemoItem[] }) {
     <div className="h-full flex flex-col">
       <div className="p-4 border-b border-gray-100">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-900">Schedule</h3>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
+              <Calendar className="w-3.5 h-3.5 text-blue-600" />
+            </div>
+            <h3 className="text-sm font-semibold text-gray-900 tracking-tight">Schedule</h3>
+          </div>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setWeekOffset(Math.max(0, weekOffset - 1))}
               disabled={weekOffset === 0}
-              className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 transition-colors"
+              className="p-1 rounded-lg hover:bg-gray-100 disabled:opacity-30 transition-colors"
+              aria-label="Previous week"
             >
               <ChevronLeft className="w-3.5 h-3.5 text-gray-500" />
             </button>
@@ -39,20 +52,23 @@ export function SchedulePanel({ items }: { items: DemoItem[] }) {
             <button
               onClick={() => setWeekOffset(Math.min(1, weekOffset + 1))}
               disabled={weekOffset === 1}
-              className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 transition-colors"
+              className="p-1 rounded-lg hover:bg-gray-100 disabled:opacity-30 transition-colors"
+              aria-label="Next week"
             >
               <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
             </button>
           </div>
         </div>
-        <div className="flex gap-4">
-          <div className="text-center">
-            <p className="text-xl font-semibold text-gray-900">{totalScheduled}</p>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Scheduled</p>
+        <div className="flex gap-5">
+          <div>
+            <p className="text-xl font-semibold text-gray-900 tracking-tight">{totalScheduled}</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">Scheduled</p>
           </div>
-          <div className="text-center">
-            <p className="text-xl font-semibold text-gray-900">{Math.round(totalMinutes / 60)}h {totalMinutes % 60}m</p>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Reading time</p>
+          <div>
+            <p className="text-xl font-semibold text-gray-900 tracking-tight">
+              {Math.round(totalMinutes / 60)}h {totalMinutes % 60}m
+            </p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">Reading time</p>
           </div>
         </div>
       </div>
@@ -86,10 +102,12 @@ export function SchedulePanel({ items }: { items: DemoItem[] }) {
             {day.items.length > 0 ? (
               <div className="space-y-1 mb-2">
                 {day.items.map((item) => (
-                  <motion.div
+                  <motion.button
+                    type="button"
                     key={item.id}
                     whileHover={{ x: 2 }}
-                    className="flex items-center gap-2 px-2 py-1.5 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer group"
+                    onClick={() => onItemClick?.(item)}
+                    className="w-full flex items-center gap-2 px-2.5 py-2 bg-gray-50 border border-transparent rounded-xl hover:bg-white hover:border-gray-200 transition-colors cursor-pointer group text-left"
                   >
                     <div
                       className={cn(
@@ -105,12 +123,14 @@ export function SchedulePanel({ items }: { items: DemoItem[] }) {
                         {item.readTimeMinutes} min · {item.source}
                       </p>
                     </div>
-                  </motion.div>
+                  </motion.button>
                 ))}
               </div>
             ) : (
-              <div className="px-2 py-1.5 mb-2">
-                <p className="text-[11px] text-gray-300 italic">No items scheduled</p>
+              <div className="px-2.5 py-2.5 mb-2 rounded-xl border border-dashed border-gray-200 bg-gray-50/50">
+                <p className="text-[11px] text-gray-400">
+                  {weekOffset === 0 ? 'Free slot. Open an item to schedule it.' : 'Nothing planned yet.'}
+                </p>
               </div>
             )}
           </div>
@@ -118,8 +138,8 @@ export function SchedulePanel({ items }: { items: DemoItem[] }) {
       </div>
 
       <div className="p-3 border-t border-gray-100">
-        <p className="text-[11px] text-gray-400 text-center">
-          Drag items from feed to reschedule
+        <p className="text-[11px] text-gray-400 text-center leading-relaxed">
+          Open any item to schedule a reading slot
         </p>
       </div>
     </div>
