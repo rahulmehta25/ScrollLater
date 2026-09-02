@@ -19,15 +19,16 @@ export interface Collection {
   name: string;
   color: string;
   dotColor: string;
+  hex: string;
 }
 
 export const collections: Collection[] = [
-  { id: 'tech', name: 'Tech', color: 'text-blue-600 bg-blue-50', dotColor: 'bg-blue-500' },
-  { id: 'ai', name: 'AI & ML', color: 'text-violet-600 bg-violet-50', dotColor: 'bg-violet-500' },
-  { id: 'finance', name: 'Finance', color: 'text-emerald-600 bg-emerald-50', dotColor: 'bg-emerald-500' },
-  { id: 'design', name: 'Design', color: 'text-pink-600 bg-pink-50', dotColor: 'bg-pink-500' },
-  { id: 'science', name: 'Science', color: 'text-cyan-600 bg-cyan-50', dotColor: 'bg-cyan-500' },
-  { id: 'productivity', name: 'Productivity', color: 'text-amber-600 bg-amber-50', dotColor: 'bg-amber-500' },
+  { id: 'tech', name: 'Tech', color: 'text-blue-600 bg-blue-50', dotColor: 'bg-blue-500', hex: '#3B82F6' },
+  { id: 'ai', name: 'AI & ML', color: 'text-violet-600 bg-violet-50', dotColor: 'bg-violet-500', hex: '#8B5CF6' },
+  { id: 'finance', name: 'Finance', color: 'text-emerald-600 bg-emerald-50', dotColor: 'bg-emerald-500', hex: '#10B981' },
+  { id: 'design', name: 'Design', color: 'text-pink-600 bg-pink-50', dotColor: 'bg-pink-500', hex: '#EC4899' },
+  { id: 'science', name: 'Science', color: 'text-cyan-600 bg-cyan-50', dotColor: 'bg-cyan-500', hex: '#06B6D4' },
+  { id: 'productivity', name: 'Productivity', color: 'text-amber-600 bg-amber-50', dotColor: 'bg-amber-500', hex: '#F59E0B' },
 ];
 
 export const categoryThumbBg: Record<string, string> = {

@@ -22,14 +22,15 @@ export interface NotificationPayload {
 // Check if push notifications are supported
 export function isPushSupported(): boolean {
   return typeof window !== 'undefined' &&
-    'serviceWorker' in navigator &&
-    'PushManager' in window &&
-    'Notification' in window
+    typeof navigator !== 'undefined' &&
+    !!navigator.serviceWorker &&
+    typeof window.PushManager !== 'undefined' &&
+    typeof window.Notification !== 'undefined'
 }
 
 // Get current notification permission status
 export function getNotificationPermission(): NotificationPermission {
-  if (typeof window === 'undefined' || !('Notification' in window)) {
+  if (typeof window === 'undefined' || typeof window.Notification === 'undefined') {
     return 'denied'
   }
   return Notification.permission

@@ -68,9 +68,9 @@ test.describe('Demo Features', () => {
 
     await page.waitForLoadState('networkidle')
 
-    // Basic accessibility checks
-    // Check for skip links, main landmark, etc.
-    const mainContent = page.locator('main, [role="main"], body > div')
+    // Basic accessibility checks: prefer the real main landmark.
+    // Avoid `body > div` which can match Next.js hidden root siblings.
+    const mainContent = page.locator('main, [role="main"]')
     await expect(mainContent.first()).toBeVisible()
   })
 })

@@ -19,16 +19,19 @@ import {
   RefreshCw,
   ExternalLink,
   Globe,
+  Settings,
 } from 'lucide-react';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Toggle } from '@/components/ui/Toggle';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [shortcutToken, setShortcutToken] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -37,10 +40,13 @@ export default function SettingsPage() {
   const supabase = useMemo(() => createSupabaseClient(), []);
 
   useEffect(() => {
+    if (authLoading) return;
     if (user) {
       fetchUserProfile();
+    } else {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const fetchUserProfile = async () => {
     try {
@@ -108,7 +114,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
         <Skeleton className="h-8 w-32 mb-2" />
@@ -130,10 +136,52 @@ export default function SettingsPage() {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 px-4 py-10">
+        <div className="max-w-lg mx-auto">
+          <div className="mb-6">
+            <Link
+              href="/"
+              className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+            >
+              Back to library
+            </Link>
+          </div>
+          <Card className="shadow-sm">
+            <EmptyState
+              icon={<Settings className="w-6 h-6" />}
+              title="Settings need an account"
+              description="You can keep exploring the demo library, digest, and save-link flow without signing in. Account settings unlock after login."
+              action={{
+                label: 'Back to library',
+                onClick: () => {
+                  window.location.href = '/';
+                },
+              }}
+              secondaryAction={{
+                label: 'Sign in',
+                onClick: () => {
+                  window.location.href = '/login';
+                },
+              }}
+            />
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 pb-24 lg:pb-8">
       <div className="mb-8 animate-fade-in-up">
-        <h1 className="text-2xl font-semibold text-gray-900">Settings</h1>
+        <Link
+          href="/"
+          className="inline-block text-sm text-gray-500 hover:text-gray-800 transition-colors mb-3"
+        >
+          Back to library
+        </Link>
+        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Settings</h1>
         <p className="text-sm text-gray-500 mt-1">Manage your account and preferences</p>
       </div>
 

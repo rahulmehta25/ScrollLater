@@ -71,11 +71,14 @@ function makeEntry(overrides: Record<string, unknown> = {}) {
 // Helper — build a chainable Supabase mock
 // ---------------------------------------------------------------------------
 function makeSupabaseMock(error: { message: string } | null = null) {
+  const result = { error }
   const chain = {
-    insert: vi.fn().mockReturnThis(),
+    // create path awaits insert() directly
+    insert: vi.fn().mockResolvedValue(result),
     update: vi.fn().mockReturnThis(),
     delete: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockResolvedValue({ error }),
+    // update/delete paths await eq()
+    eq: vi.fn().mockResolvedValue(result),
   }
   return { from: vi.fn(() => chain), _chain: chain }
 }
@@ -652,7 +655,7 @@ describe('offline.ts', () => {
       localStorageMock.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue))
 
       const throwingChain = {
-        insert: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockRejectedValue(new Error('network crash')),
         update: vi.fn().mockReturnThis(),
         delete: vi.fn().mockReturnThis(),
         eq: vi.fn().mockRejectedValue(new Error('network crash')),

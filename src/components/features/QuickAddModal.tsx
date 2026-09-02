@@ -175,8 +175,8 @@ function QuickAddModal({ open, onClose, onSave }: QuickAddModalProps) {
             >
               <CheckCircle className="w-7 h-7 text-green-600" />
             </motion.div>
-            <h3 className="text-base font-semibold text-gray-900 mb-1">Saved!</h3>
-            <p className="text-sm text-gray-500">Added to your reading list</p>
+            <h3 className="text-base font-semibold text-gray-900 mb-1 tracking-tight">Saved</h3>
+            <p className="text-sm text-gray-500">Added to your reading list. Find it at the top of your library.</p>
           </motion.div>
         ) : (
           <motion.div
