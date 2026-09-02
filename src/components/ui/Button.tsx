@@ -28,21 +28,21 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const variants = {
       primary:
-        'bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-950 disabled:bg-gray-300',
+        'bg-ink text-paper-raised hover:bg-ink/90 active:bg-ink disabled:bg-paper-deep disabled:text-ink-faint',
       secondary:
-        'bg-gray-100 text-gray-900 hover:bg-gray-200 active:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400',
+        'bg-paper-muted text-ink hover:bg-paper-deep active:bg-paper-deep disabled:bg-paper-muted disabled:text-ink-faint',
       ghost:
-        'bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200 disabled:text-gray-400',
+        'bg-transparent text-ink-muted hover:bg-paper-muted hover:text-ink active:bg-paper-deep disabled:text-ink-faint',
       danger:
-        'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 disabled:bg-red-300',
+        'bg-red-700 text-white hover:bg-red-800 active:bg-red-900 disabled:bg-red-300',
       outline:
-        'bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 active:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200',
+        'bg-paper-raised text-ink border border-paper-deep hover:border-ink-faint hover:bg-paper-soft active:bg-paper-muted disabled:text-ink-faint disabled:border-paper-deep',
     };
 
     const sizes = {
-      sm: 'h-8 px-3 text-xs gap-1.5',
-      md: 'h-9 px-4 text-sm gap-2',
-      lg: 'h-10 px-5 text-sm gap-2',
+      sm: 'h-8 px-3 text-xs gap-1.5 rounded-lg',
+      md: 'h-9 px-4 text-sm gap-2 rounded-xl',
+      lg: 'h-11 px-5 text-sm gap-2 rounded-xl',
     };
 
     return (
@@ -50,7 +50,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          'inline-flex items-center justify-center font-medium rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:ring-offset-1 disabled:cursor-not-allowed',
+          'inline-flex items-center justify-center font-medium transition-all duration-200 ease-calm focus:outline-none focus:ring-2 focus:ring-terracotta-500/20 focus:ring-offset-1 focus:ring-offset-paper disabled:cursor-not-allowed',
           variants[variant],
           sizes[size],
           className

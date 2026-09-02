@@ -12,9 +12,9 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', padding = 'md', hoverable = false, children, ...props }, ref) => {
     const variants = {
-      default: 'bg-white border border-gray-200',
-      outlined: 'bg-white border border-gray-300',
-      elevated: 'bg-white shadow-sm border border-gray-200',
+      default: 'bg-paper-raised border border-paper-deep',
+      outlined: 'bg-paper-raised border border-ink-faint',
+      elevated: 'bg-paper-raised shadow-soft border border-paper-deep',
     };
 
     const paddings = {
@@ -31,7 +31,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
           'rounded-xl transition-all duration-150',
           variants[variant],
           paddings[padding],
-          hoverable && 'hover:border-gray-300 hover:shadow-sm cursor-pointer',
+          hoverable && 'hover:border-ink-faint hover:shadow-soft cursor-pointer',
           className
         )}
         {...props}
@@ -66,7 +66,7 @@ const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
   ({ className, as: Tag = 'h3', ...props }, ref) => (
     <Tag
       ref={ref}
-      className={cn('text-base font-semibold text-gray-900', className)}
+      className={cn('font-serif text-base tracking-display text-ink', className)}
       {...props}
     />
   )
@@ -80,7 +80,7 @@ const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      className={cn('text-sm text-gray-500', className)}
+      className={cn('text-sm text-ink-muted', className)}
       {...props}
     />
   )
@@ -104,7 +104,7 @@ const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('flex items-center gap-3 mt-4 pt-4 border-t border-gray-100', className)}
+      className={cn('flex items-center gap-3 mt-4 pt-4 border-t border-paper-deep', className)}
       {...props}
     />
   )

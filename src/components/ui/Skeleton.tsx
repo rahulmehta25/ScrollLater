@@ -35,7 +35,7 @@ function SkeletonText({ className, lines = 1 }: SkeletonProps & { lines?: number
 
 function SkeletonCard({ className }: SkeletonProps) {
   return (
-    <div className={cn('p-4 bg-white border border-gray-200 rounded-xl', className)}>
+    <div className={cn('p-4 bg-paper-raised border border-paper-deep rounded-2xl', className)}>
       <div className="flex gap-3">
         <Skeleton className="w-14 h-14 rounded-lg flex-shrink-0" />
         <div className="flex-1 space-y-2">
@@ -53,7 +53,7 @@ function SkeletonCard({ className }: SkeletonProps) {
 
 function SkeletonCardGrid({ className }: SkeletonProps) {
   return (
-    <div className={cn('bg-white border border-gray-200 rounded-xl overflow-hidden', className)}>
+    <div className={cn('bg-paper-raised border border-paper-deep rounded-2xl overflow-hidden', className)}>
       <Skeleton className="h-28 w-full rounded-none" />
       <div className="p-3 space-y-2">
         <div className="flex gap-1.5">
@@ -95,7 +95,7 @@ function SkeletonSidebar({ className }: SkeletonProps) {
           <Skeleton key={i} className="h-9 w-full rounded-lg" />
         ))}
       </div>
-      <div className="space-y-1 pt-2 border-t border-gray-100">
+      <div className="space-y-1 pt-2 border-t border-paper-deep">
         <Skeleton className="h-3 w-20 mb-2" />
         {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton key={i} className="h-9 w-full rounded-lg" />
@@ -109,7 +109,7 @@ function SkeletonStats({ className }: SkeletonProps) {
   return (
     <div className={cn('flex gap-4', className)}>
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="flex-1 p-4 bg-white border border-gray-200 rounded-xl">
+        <div key={i} className="flex-1 p-4 bg-paper-raised border border-paper-deep rounded-2xl">
           <Skeleton className="h-6 w-12 mb-2" />
           <Skeleton className="h-3 w-16" />
         </div>

@@ -15,6 +15,7 @@ import {
   Plus,
   ChevronDown,
   Command,
+  BookOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -78,16 +79,16 @@ function Sidebar({
   return (
     <aside
       className={cn(
-        'hidden lg:flex w-60 flex-col border-r border-gray-200 bg-white',
+        'hidden lg:flex w-60 flex-col border-r border-paper-deep bg-paper-raised',
         className
       )}
     >
-      <div className="p-4 border-b border-gray-100">
+      <div className="p-4 border-b border-paper-deep/80">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105">
-            <Bookmark className="w-4 h-4 text-white" strokeWidth={2.5} />
+          <div className="w-8 h-8 bg-ink rounded-lg flex items-center justify-center transition-transform duration-300 ease-calm group-hover:scale-105">
+            <BookOpen className="w-4 h-4 text-paper-raised" strokeWidth={2.25} />
           </div>
-          <span className="text-lg font-semibold text-gray-900 tracking-tight">
+          <span className="font-serif text-lg tracking-display text-ink">
             ScrollLater
           </span>
         </Link>
@@ -96,21 +97,21 @@ function Sidebar({
       <div className="p-3 space-y-2">
         <button
           onClick={onCommandPalette}
-          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-subtle bg-paper-soft border border-paper-deep rounded-xl hover:bg-paper-muted hover:border-ink-faint transition-colors"
         >
           <Search className="w-3.5 h-3.5" />
           <span className="flex-1 text-left">Search...</span>
-          <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 bg-white border border-gray-200 rounded">
+          <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-ink-faint bg-paper-raised border border-paper-deep rounded">
             <Command className="w-2.5 h-2.5" />K
           </kbd>
         </button>
 
         <motion.button
           onClick={onAddClick}
-          whileHover={{ scale: 1.04, boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
-          whileTap={{ scale: 0.96 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-paper-raised bg-terracotta-500 rounded-xl hover:bg-terracotta-600 transition-colors shadow-glow"
         >
           <Plus className="w-4 h-4" />
           Save Link
@@ -118,7 +119,7 @@ function Sidebar({
       </div>
 
       <nav className="flex-1 px-2 py-1 overflow-y-auto">
-        <p className="px-2 py-1.5 text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+        <p className="px-2 py-1.5 text-[11px] font-medium text-ink-faint uppercase tracking-[0.14em]">
           Library
         </p>
         {navItems.map((item) => {
@@ -129,24 +130,24 @@ function Sidebar({
               key={item.id}
               onClick={() => onCollectionChange?.(item.id)}
               className={cn(
-                'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150 relative',
+                'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-sm transition-all duration-200 relative',
                 isActive
-                  ? 'bg-gray-100 text-gray-900 font-medium'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'text-ink font-medium'
+                  : 'text-ink-muted hover:bg-paper-muted/80 hover:text-ink'
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId="sidebar-active"
-                  className="absolute inset-0 bg-gray-100 rounded-lg"
+                  className="absolute inset-0 bg-paper-muted rounded-xl"
                   initial={false}
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+                  transition={{ type: 'spring', bounce: 0.18, duration: 0.45 }}
                 />
               )}
-              <Icon className="w-4 h-4 relative z-10" />
+              <Icon className={cn('w-4 h-4 relative z-10', isActive && 'text-terracotta-600')} />
               <span className="flex-1 text-left relative z-10">{item.label}</span>
               {item.count > 0 && (
-                <span className="text-xs text-gray-400 tabular-nums relative z-10">
+                <span className="text-xs text-ink-faint tabular-nums relative z-10">
                   {item.count}
                 </span>
               )}
@@ -154,11 +155,11 @@ function Sidebar({
           );
         })}
 
-        <div className="my-3 border-t border-gray-100" />
+        <div className="my-3 border-t border-paper-deep/80" />
 
         <button
           onClick={() => setCollectionsExpanded(!collectionsExpanded)}
-          className="w-full flex items-center gap-2 px-2 py-1.5 text-[11px] font-medium text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
+          className="w-full flex items-center gap-2 px-2 py-1.5 text-[11px] font-medium text-ink-faint uppercase tracking-[0.14em] hover:text-ink-subtle transition-colors"
         >
           <span>Collections</span>
           <ChevronDown
@@ -183,22 +184,19 @@ function Sidebar({
                   key={col.id}
                   onClick={() => onCollectionChange?.(col.id)}
                   className={cn(
-                    'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150',
+                    'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-sm transition-all duration-200',
                     isActive
-                      ? 'bg-gray-100 text-gray-900 font-medium'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-paper-muted text-ink font-medium'
+                      : 'text-ink-muted hover:bg-paper-muted/80 hover:text-ink'
                   )}
                 >
                   <span
-                    className="w-2.5 h-2.5 rounded-full transition-transform duration-150 flex-shrink-0"
-                    style={{
-                      backgroundColor: col.color.startsWith('#') ? col.color : undefined,
-                      transform: isActive ? 'scale(1.2)' : 'scale(1)',
-                    }}
+                    className="w-2.5 h-2.5 rounded-full transition-transform duration-150"
+                    style={{ backgroundColor: col.color, transform: isActive ? 'scale(1.15)' : 'scale(1)' }}
                   />
                   <span className="flex-1 text-left truncate">{col.name}</span>
                   {col.count > 0 && (
-                    <span className="text-xs text-gray-400 tabular-nums">
+                    <span className="text-xs text-ink-faint tabular-nums">
                       {col.count}
                     </span>
                   )}
@@ -206,22 +204,22 @@ function Sidebar({
               );
             })}
             {collections.length === 0 && (
-              <p className="px-2.5 py-2 text-xs text-gray-400">
-                No collections yet. Save a link to start one.
+              <p className="px-2.5 py-2 text-xs text-ink-faint italic">
+                No collections yet
               </p>
             )}
           </motion.div>
         )}
       </nav>
 
-      <div className="p-3 border-t border-gray-100">
+      <div className="p-3 border-t border-paper-deep/80">
         <Link
           href="/dashboard/settings"
           className={cn(
-            'flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors',
+            'flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-sm transition-colors',
             pathname === '/dashboard/settings'
-              ? 'bg-gray-100 text-gray-900 font-medium'
-              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              ? 'bg-paper-muted text-ink font-medium'
+              : 'text-ink-muted hover:bg-paper-muted/80 hover:text-ink'
           )}
         >
           <Settings className="w-4 h-4" />

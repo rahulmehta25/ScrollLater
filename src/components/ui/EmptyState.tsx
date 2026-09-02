@@ -34,14 +34,23 @@ function EmptyState({
         className
       )}
     >
-      {icon && (
-        <div className="w-14 h-14 rounded-2xl bg-gray-100 border border-gray-200/80 flex items-center justify-center text-gray-400 mb-5 shadow-sm">
-          {icon}
+      <div className="relative mb-6">
+        <div
+          aria-hidden
+          className="absolute inset-0 -m-3 rounded-full bg-terracotta-100/70 blur-xl animate-soft-pulse"
+        />
+        <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-paper-deep bg-paper-raised text-terracotta-500 shadow-soft">
+          {icon || (
+            <svg viewBox="0 0 48 48" className="h-8 w-8" fill="none" aria-hidden>
+              <rect x="10" y="12" width="28" height="24" rx="3" className="stroke-current" strokeWidth="1.5" />
+              <path d="M16 20h16M16 25h12M16 30h8" className="stroke-current" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          )}
         </div>
-      )}
-      <h3 className="text-base font-semibold text-gray-900 tracking-tight mb-1.5">{title}</h3>
+      </div>
+      <h3 className="font-serif text-xl tracking-display text-ink mb-2">{title}</h3>
       {description && (
-        <p className="text-sm text-gray-500 max-w-sm leading-relaxed mb-5">{description}</p>
+        <p className="text-sm text-ink-muted max-w-sm leading-relaxed mb-6">{description}</p>
       )}
       {(action || secondaryAction) && (
         <div className="flex flex-wrap items-center justify-center gap-2.5">

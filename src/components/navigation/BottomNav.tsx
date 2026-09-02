@@ -28,7 +28,7 @@ function BottomNav({
   return (
     <nav
       className={cn(
-        'lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 pb-safe z-40',
+        'lg:hidden fixed bottom-0 left-0 right-0 bg-paper-raised/95 backdrop-blur border-t border-paper-deep px-2 pb-safe z-40',
         className
       )}
     >
@@ -42,12 +42,13 @@ function BottomNav({
               <motion.button
                 key={tab.id}
                 onClick={onAddClick}
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.92 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                className="relative -mt-6"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                className="relative -mt-5"
+                aria-label="Save link"
               >
-                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center shadow-lg shadow-gray-900/20">
+                <div className="w-14 h-14 bg-terracotta-500 rounded-2xl flex items-center justify-center shadow-glow">
                   <Plus className="w-6 h-6 text-white" strokeWidth={2} />
                 </div>
               </motion.button>
@@ -63,7 +64,7 @@ function BottomNav({
               {isActive && (
                 <motion.div
                   layoutId="bottom-nav-active"
-                  className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-1 bg-gray-900 rounded-b-full"
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-terracotta-500 rounded-b-full"
                   initial={false}
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
                 />
@@ -71,13 +72,13 @@ function BottomNav({
               <Icon
                 className={cn(
                   'w-5 h-5 transition-colors',
-                  isActive ? 'text-gray-900' : 'text-gray-400'
+                  isActive ? 'text-terracotta-600' : 'text-ink-faint'
                 )}
               />
               <span
                 className={cn(
                   'text-[10px] mt-1 transition-colors',
-                  isActive ? 'text-gray-900 font-medium' : 'text-gray-400'
+                  isActive ? 'text-ink font-medium' : 'text-ink-faint'
                 )}
               >
                 {tab.label}

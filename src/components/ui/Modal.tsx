@@ -50,7 +50,7 @@ function Modal({ open, onClose, children, size = 'md', showClose = true, classNa
           >
             <DialogPanel
               className={cn(
-                'w-full bg-white rounded-xl shadow-xl overflow-hidden',
+                'w-full bg-paper-raised rounded-2xl shadow-lift overflow-hidden border border-paper-deep',
                 sizes[size],
                 className
               )}
@@ -58,7 +58,7 @@ function Modal({ open, onClose, children, size = 'md', showClose = true, classNa
               {showClose && (
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors z-10"
+                  className="absolute top-4 right-4 p-1.5 rounded-lg text-ink-faint hover:text-ink-muted hover:bg-paper-muted transition-colors z-10"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -79,7 +79,7 @@ interface ModalHeaderProps {
 
 function ModalHeader({ children, className }: ModalHeaderProps) {
   return (
-    <div className={cn('px-5 py-4 border-b border-gray-100', className)}>
+    <div className={cn('px-5 py-4 border-b border-paper-deep', className)}>
       {children}
     </div>
   );
@@ -92,7 +92,7 @@ interface ModalTitleProps {
 
 function ModalTitle({ children, className }: ModalTitleProps) {
   return (
-    <h2 className={cn('text-base font-semibold text-gray-900', className)}>
+    <h2 className={cn('font-serif text-lg tracking-display text-ink', className)}>
       {children}
     </h2>
   );
@@ -105,7 +105,7 @@ interface ModalDescriptionProps {
 
 function ModalDescription({ children, className }: ModalDescriptionProps) {
   return (
-    <p className={cn('text-sm text-gray-500 mt-1', className)}>
+    <p className={cn('text-sm text-ink-muted mt-1', className)}>
       {children}
     </p>
   );
@@ -127,7 +127,7 @@ interface ModalFooterProps {
 
 function ModalFooter({ children, className }: ModalFooterProps) {
   return (
-    <div className={cn('px-5 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3', className)}>
+    <div className={cn('px-5 py-4 bg-paper-soft border-t border-paper-deep flex items-center justify-end gap-3', className)}>
       {children}
     </div>
   );

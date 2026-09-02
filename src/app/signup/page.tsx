@@ -73,33 +73,33 @@ export default function SignupPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      <div className="min-h-screen flex items-center justify-center bg-paper">
+        <Loader2 className="w-8 h-8 animate-spin text-terracotta-500" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-orange-50 to-amber-50">
+    <div className="min-h-screen flex flex-col bg-paper">
       <div className="p-4">
         <Link
           href="/"
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
-          Back to home
+          Back to ScrollLater
         </Link>
       </div>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-xl p-8 animate-fade-in-scale">
+          <div className="bg-paper-raised rounded-3xl shadow-soft border border-paper-deep p-8 animate-fade-in-scale">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 text-white text-2xl font-bold mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-terracotta-500 to-terracotta-600 text-white text-2xl font-bold mb-4">
                 SL
               </div>
-              <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
-              <p className="text-gray-600 mt-2">Start organizing your content today</p>
+              <h1 className="font-serif text-2xl tracking-display text-ink">Create your account</h1>
+              <p className="text-ink-muted mt-2">Start organizing your content today</p>
             </div>
 
             {error && (
@@ -118,7 +118,7 @@ export default function SignupPage() {
               <button
                 onClick={() => handleOAuthSignIn('google')}
                 disabled={loading}
-                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-700 font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-700 font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracotta-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -132,7 +132,7 @@ export default function SignupPage() {
               <button
                 onClick={() => handleOAuthSignIn('github')}
                 disabled={loading}
-                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-700 font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-700 font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracotta-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -164,7 +164,7 @@ export default function SignupPage() {
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       placeholder="Your name"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-shadow"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-terracotta-500 focus:border-transparent transition-shadow"
                     />
                   </div>
                 </div>
@@ -181,7 +181,7 @@ export default function SignupPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-shadow"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-terracotta-500 focus:border-transparent transition-shadow"
                       required
                     />
                   </div>
@@ -201,7 +201,7 @@ export default function SignupPage() {
                       onFocus={() => setPasswordFocused(true)}
                       onBlur={() => setPasswordFocused(false)}
                       placeholder="Create a password"
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-shadow"
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-terracotta-500 focus:border-transparent transition-shadow"
                       required
                     />
                     <button
@@ -238,7 +238,7 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   disabled={loading || !passwordValidation.valid}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="w-full py-3 px-4 bg-gradient-to-r from-terracotta-500 to-terracotta-600 text-white font-semibold rounded-xl hover:from-terracotta-600 hover:to-terracotta-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracotta-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">
@@ -254,16 +254,16 @@ export default function SignupPage() {
 
             <p className="mt-6 text-center text-sm text-gray-600">
               Already have an account?{' '}
-              <Link href="/login" className="text-orange-600 font-medium hover:text-orange-700">
+              <Link href="/login" className="text-terracotta-600 font-medium hover:text-terracotta-700">
                 Sign in
               </Link>
             </p>
 
             <p className="mt-4 text-center text-xs text-gray-500">
               By signing up, you agree to our{' '}
-              <Link href="/terms" className="text-orange-600 hover:text-orange-700">Terms of Service</Link>
+              <Link href="/terms" className="text-terracotta-600 hover:text-terracotta-700">Terms of Service</Link>
               {' '}and{' '}
-              <Link href="/privacy" className="text-orange-600 hover:text-orange-700">Privacy Policy</Link>
+              <Link href="/privacy" className="text-terracotta-600 hover:text-terracotta-700">Privacy Policy</Link>
             </p>
           </div>
         </div>

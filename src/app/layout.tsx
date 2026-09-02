@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Newsreader } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -12,13 +12,21 @@ import { PostHogProvider } from "@/components/analytics/PostHogProvider";
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
-  title: "ScrollLater - Save it. Schedule it. Actually read it.",
-  description: "A smart content curation platform that helps you save, organize, and schedule time to revisit articles, videos, and ideas.",
-  keywords: "productivity, content curation, bookmarks, read later, scheduling",
+  title: "ScrollLater | Save it. Schedule it. Actually read it.",
+  description: "A quiet reading room for the internet. Save articles, videos, and ideas, then schedule time to actually finish them.",
+  keywords: "productivity, content curation, bookmarks, read later, scheduling, reading list",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -31,8 +39,8 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "ScrollLater",
-    title: "ScrollLater - Save it. Schedule it. Actually read it.",
-    description: "A smart content curation platform that helps you save, organize, and schedule time to revisit articles, videos, and ideas.",
+    title: "ScrollLater | Save it. Schedule it. Actually read it.",
+    description: "A quiet reading room for the internet. Save articles, videos, and ideas, then schedule time to actually finish them.",
   },
   twitter: {
     card: "summary_large_image",
@@ -46,7 +54,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#171717",
+  themeColor: "#F7F4EF",
   viewportFit: "cover",
 };
 
@@ -63,7 +71,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${newsreader.variable} font-sans antialiased bg-paper text-ink`}>
         <AuthProvider>
           <ToastProvider>
             {children}
