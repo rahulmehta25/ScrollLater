@@ -112,7 +112,6 @@ export default function Home() {
   const [activeCollection, setActiveCollection] = useState('all');
   const [activeType, setActiveType] = useState('all');
   const [searchQuery] = useState('');
-  const [rightTab, setRightTab] = useState<'schedule' | 'digest'>('digest');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [mobileTab, setMobileTab] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
@@ -275,7 +274,6 @@ export default function Home() {
         ? { ...prev, scheduledDate: prev.scheduledDate || '2026-03-08' }
         : prev
     );
-    setRightTab('schedule');
     success('Scheduled', 'Added to tomorrow reading block');
   };
 
@@ -364,7 +362,6 @@ export default function Home() {
             <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={() => {
-                  setRightTab('digest');
                   setMobilePanel('digest');
                 }}
                 className="p-1.5 rounded-lg text-ink-muted hover:bg-paper-muted transition-colors duration-craft"
@@ -375,7 +372,6 @@ export default function Home() {
               </button>
               <button
                 onClick={() => {
-                  setRightTab('schedule');
                   setMobilePanel('schedule');
                 }}
                 className="p-1.5 rounded-lg text-ink-muted hover:bg-paper-muted transition-colors duration-craft"
@@ -432,7 +428,6 @@ export default function Home() {
               </div>
               <button
                 onClick={() => {
-                  setRightTab('digest');
                   setMobilePanel('digest');
                 }}
                 className="link-underline text-sm self-start sm:self-auto"
@@ -572,11 +567,9 @@ export default function Home() {
         onSaveLink={() => setQuickAddOpen(true)}
         onNavigate={(path) => router.push(path)}
         onOpenDigest={() => {
-          setRightTab('digest');
           setMobilePanel('digest');
         }}
         onOpenSchedule={() => {
-          setRightTab('schedule');
           setMobilePanel('schedule');
         }}
         onBrowseCollections={() => {
