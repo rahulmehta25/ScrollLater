@@ -281,7 +281,7 @@ function QuickAddModal({ open, onClose, onSave }: QuickAddModalProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="link-underline text-sm"
+                className="text-sm text-ink underline decoration-ink/40 underline-offset-[0.18em] transition-colors duration-craft hover:decoration-ink"
               >
                 Cancel
               </button>
@@ -289,7 +289,10 @@ function QuickAddModal({ open, onClose, onSave }: QuickAddModalProps) {
                 onClick={handleSave}
                 loading={isSaving}
                 disabled={!url}
-                className="rounded-full px-5"
+                className={cn(
+                  'rounded-full px-5 min-w-[7.5rem]',
+                  !url && 'border border-paper-deep bg-paper-muted text-ink-subtle'
+                )}
               >
                 Save Link
               </Button>

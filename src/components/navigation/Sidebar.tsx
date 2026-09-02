@@ -197,7 +197,7 @@ function Sidebar({
         )}
       </nav>
 
-      <div className="relative z-30 p-4 pb-8 border-t border-paper-deep bg-paper">
+      <div className="relative z-30 p-4 pb-20 border-t border-paper-deep bg-paper">
         <Link
           href="/dashboard/settings"
           className={cn(
